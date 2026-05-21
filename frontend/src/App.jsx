@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PathView from './views/PathView'
 
 const TABS = [
   { id: 'path',    label: 'Path',    icon: '🛤️'  },
@@ -20,10 +21,15 @@ function App() {
       <div className="w-full max-w-[420px] flex flex-col h-screen bg-[#0f0f0f]">
 
         {/* ── Content area ─────────────────────────────────── */}
-        <main className="flex-1 flex items-center justify-center overflow-y-auto">
-          <p className="text-[#3a3a3a] text-sm tracking-wide capitalize">
-            {activeTab} view coming soon
-          </p>
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {activeTab === 'path' && <PathView />}
+          {activeTab !== 'path' && (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-[#3a3a3a] text-sm tracking-wide capitalize">
+                {activeTab} view coming soon
+              </p>
+            </div>
+          )}
         </main>
 
         {/* ── Bottom navigation bar ────────────────────────── */}
