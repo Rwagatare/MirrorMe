@@ -8,14 +8,16 @@ from datetime import datetime
 from typing import Optional
 
 # What a task looks like when arrives at the API
-class TaskCreate(BaseModel): 
+class TaskCreate(BaseModel):
     title: str
-    notes: Optional[str] = None 
-    due_date: Optional[str] = None 
+    notes: Optional[str] = None
+    due_date: Optional[str] = None
     reminder_time: Optional[str] = None
     priority: str = "low"
+    status: str = "todo"
     section: str = "morning"
     duration_minutes: int = 25
+    stars_average: Optional[float] = None
 
 class TaskUpdate(BaseModel): 
     title: Optional[str] = None 
@@ -26,6 +28,31 @@ class TaskUpdate(BaseModel):
     duration_minutes: Optional[int] = None
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
+
+
+@router.get("/")
+def get_tasks(db: Session = Depends(get_db)):
+    """Return all tasks."""
+    return db.query(Task).all()
+
+
+@router.get("/{task_id}")
+def get_task(task_id: int, db: Session = Depends(get_db)):
+    """Return a single task by id."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+    return task
+
+
+@router.post("/")
+def create_task(data: TaskCreate, db: Session = Depends(get_db)):
+    """Create a new task."""
+    task = Task(**data.model_dump())
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+    return task
 
 
 @router.patch("/{task_id}")
