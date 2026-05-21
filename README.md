@@ -53,7 +53,7 @@ The result is MirrorMe — a local-first, AI-powered personal planner that doesn
 
 ## Contributing
 
-Contributions are welcome, especially from developers building for underserved communities. See CONTRIBUTING.md.
+Contributions are welcome, especially from any developers building.See CONTRIBUTING.md.
 
 ## License
 
@@ -61,4 +61,4 @@ MIT — open source, built with intention.
 
 ---
 
-_Built by [Livingstone Rwagatare](https://github.com/yourusername) — Rwanda 🇷🇼_
+\_Built by [Livingstone Rwagatare](https://github.com/Rwagatare)
