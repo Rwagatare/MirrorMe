@@ -5,6 +5,8 @@ from config import APP_NAME, APP_VERSION, BASE_DIR
 from database import engine, Base
 import models  # noqa: F401 — side-effect import; registers models with Base.metadata
 
+from routers import tasks, goals, habits, memory
+
 # ---------------------------------------------------------------------------
 # App instance
 # ---------------------------------------------------------------------------
@@ -32,6 +34,15 @@ def on_startup():
 
     # Create all tables declared in models.py (no-op if they already exist)
     Base.metadata.create_all(bind=engine)
+
+
+# ---------------------------------------------------------------------------
+# Routers
+# ---------------------------------------------------------------------------
+app.include_router(tasks.router)
+app.include_router(goals.router)
+app.include_router(habits.router)
+app.include_router(memory.router)
 
 
 # ---------------------------------------------------------------------------
