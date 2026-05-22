@@ -3,10 +3,10 @@ import { useState, useEffect, useRef } from 'react'
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const SECTION_META = {
-  morning: { emoji: '🌅', pill: 'bg-amber-950 text-amber-300 border border-amber-900/60' },
-  focus:   { emoji: '⚡', pill: 'bg-blue-950 text-blue-300 border border-blue-900/60' },
-  growth:  { emoji: '🌱', pill: 'bg-emerald-950 text-emerald-300 border border-emerald-900/60' },
-  evening: { emoji: '🌙', pill: 'bg-violet-950 text-violet-300 border border-violet-900/60' },
+  morning: { emoji: '🌅', borderColor: '#c8b87a' },
+  focus:   { emoji: '⚡', borderColor: '#4a9d8a' },
+  growth:  { emoji: '🌱', borderColor: '#8fa876' },
+  evening: { emoji: '🌙', borderColor: '#9b8fd4' },
 }
 
 const SECTIONS = ['morning', 'focus', 'growth', 'evening']
@@ -149,9 +149,9 @@ export default function PlannerView() {
         </span>
       </div>
 
-      {/* 7-day kanban columns — horizontal scroll on mobile */}
+      {/* 7-day kanban columns — horizontal scroll */}
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
-        <div className="flex h-full gap-2 px-3 pb-2 min-w-max">
+        <div className="flex h-full gap-2 px-3 pb-3 min-w-max">
           {weekDates.map((date) => {
             const ds       = toISODate(date)
             const isToday  = ds === todayStr
@@ -160,35 +160,67 @@ export default function PlannerView() {
             return (
               <div
                 key={ds}
-                className="flex flex-col w-[115px] flex-shrink-0 h-full"
+                style={{
+                  width: 130,
+                  minWidth: 130,
+                  flexShrink: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  background: '#161616',
+                  border: `1px solid ${isToday ? '#c8b87a' : '#2a2a2a'}`,
+                  borderRadius: 12,
+                  padding: 12,
+                  boxSizing: 'border-box',
+                }}
                 onDragOver={e => e.preventDefault()}
                 onDrop={() => onDrop(date)}
               >
                 {/* Day header */}
-                <div className={`text-center py-2 rounded-lg mb-2 ${isToday ? 'bg-[#c8b87a]/10' : ''}`}>
-                  <p className={`text-[9px] font-bold tracking-widest uppercase ${isToday ? 'text-[#c8b87a]' : 'text-[#3d3d3d]'}`}>
+                <div style={{ textAlign: 'center', marginBottom: 10 }}>
+                  <p style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: isToday ? '#c8b87a' : '#3d3d3d',
+                    margin: 0,
+                  }}>
                     {DAYS[date.getDay()]}
                   </p>
-                  <p className={`text-xl font-bold leading-tight ${isToday ? 'text-[#c8b87a]' : 'text-[#2a2a2a]'}`}>
+                  <p style={{
+                    fontSize: 22,
+                    fontWeight: 700,
+                    lineHeight: 1.2,
+                    color: isToday ? '#c8b87a' : '#3d3d3d',
+                    margin: 0,
+                  }}>
                     {date.getDate()}
                   </p>
                 </div>
 
                 {/* Drop zone / task pills */}
-                <div className="flex-1 flex flex-col gap-1.5 overflow-y-auto min-h-[40px] rounded-lg">
+                <div style={{ flex: 1, overflowY: 'auto', minHeight: 40 }}>
                   {dayTasks.map(task => {
-                    const meta = SECTION_META[task.section] ?? {
-                      emoji: '📌',
-                      pill: 'bg-[#1a1a1a] text-[#3d3d3d] border border-[#222]',
-                    }
+                    const meta = SECTION_META[task.section] ?? { emoji: '📌', borderColor: '#3a3a3a' }
                     return (
                       <div
                         key={task.id}
                         draggable
                         onDragStart={() => onDragStart(task)}
-                        className={`${meta.pill} rounded-lg px-2 py-1.5 text-[10px] font-medium cursor-grab active:cursor-grabbing active:opacity-60 transition-opacity select-none`}
+                        style={{
+                          background: '#1e1e1e',
+                          borderLeft: `3px solid ${meta.borderColor}`,
+                          borderRadius: 8,
+                          padding: '8px 10px',
+                          fontSize: 12,
+                          color: '#e8e4dc',
+                          marginBottom: 6,
+                          cursor: 'grab',
+                          userSelect: 'none',
+                        }}
                       >
-                        <span className="mr-1">{meta.emoji}</span>
+                        <span style={{ marginRight: 4 }}>{meta.emoji}</span>
                         {task.title}
                       </div>
                     )
