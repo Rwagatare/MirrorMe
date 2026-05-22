@@ -50,9 +50,10 @@ function taskDateKey(task) {
 // ─── PlannerView ─────────────────────────────────────────────────────────────
 
 export default function PlannerView() {
-  const [tasks, setTasks]         = useState([])
-  const [showSheet, setShowSheet] = useState(false)
-  const [toast, setToast]         = useState(null)
+  const [tasks, setTasks]               = useState([])
+  const [showSheet, setShowSheet]       = useState(false)
+  const [toast, setToast]               = useState(null)
+  const [hoveredDeleteId, setHoveredDeleteId] = useState(null)
   const [form, setForm]           = useState({
     title: '',
     duration_minutes: 25,
@@ -137,6 +138,14 @@ export default function PlannerView() {
 
     setForm({ title: '', duration_minutes: 25, section: 'focus', dayIndex: new Date().getDay(), recurrence: 'once', recurrence_days: [] })
     setShowSheet(false)
+    fetchTasks()
+  }
+
+  // ── Delete task ────────────────────────────────────────────────────────────
+
+  async function handleDeleteTask(id, title) {
+    if (!window.confirm(`Delete "${title}"?`)) return
+    await fetch(`http://localhost:8000/tasks/${id}`, { method: 'DELETE' })
     fetchTasks()
   }
 
