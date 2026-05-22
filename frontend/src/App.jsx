@@ -2,6 +2,9 @@ import { useState } from 'react'
 import PathView    from './views/PathView'
 import PlannerView from './views/PlannerView'
 import GoalsView   from './views/GoalsView'
+import MirrorView  from './views/MirrorView'
+import AIView      from './views/AIView'
+import YouView     from './views/YouView'
 
 // ─── SVG line icons ───────────────────────────────────────────────────────────
 // All icons share the same 24×24 viewBox, 1.5 stroke-width, no fill.
@@ -89,13 +92,9 @@ function App() {
           {activeTab === 'path'    && <PathView />}
           {activeTab === 'planner' && <PlannerView />}
           {activeTab === 'goals'   && <GoalsView />}
-          {activeTab !== 'path' && activeTab !== 'planner' && activeTab !== 'goals' && (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-[#3a3a3a] text-sm tracking-wide capitalize">
-                {activeTab} view coming soon
-              </p>
-            </div>
-          )}
+          {activeTab === 'mirror'  && <MirrorView />}
+          {activeTab === 'ai'      && <AIView />}
+          {activeTab === 'you'     && <YouView />}
         </main>
 
         {/* ── Bottom nav — iOS-style SVG line icons ─────────── */}

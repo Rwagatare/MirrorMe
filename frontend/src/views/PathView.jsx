@@ -74,7 +74,7 @@ function Stars({ count = 0, max = 5 }) {
   )
 }
 
-function TaskNode({ task, onActivate }) {
+function TaskNode({ task, onActivate, onMenu }) {
   const { displayState, title, stars_average } = task
   const initial  = title?.[0]?.toUpperCase() ?? '?'
   const isDone   = displayState === 'done'
@@ -83,14 +83,19 @@ function TaskNode({ task, onActivate }) {
 
   const base = 'w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold relative select-none'
   const circleClass = isDone
-    ? `${base} bg-[#1f1f1f] text-[#3a3a3a]`
+    ? `${base} bg-[#1f1f1f] text-[#3a3a3a] cursor-pointer`
     : isActive
     ? `${base} bg-[#c8b87a] text-[#0f0f0f] cursor-pointer`
-    : `${base} bg-[#1a1a1a] text-[#2e2e2e] cursor-default`
+    : `${base} bg-[#1a1a1a] text-[#2e2e2e] cursor-pointer`
+
+  function handleClick() {
+    if (isActive) onActivate(task)
+    else onMenu(task)
+  }
 
   return (
     <div className="flex flex-col items-center">
-      <div className={circleClass} onClick={() => isActive && onActivate(task)}>
+      <div className={circleClass} onClick={handleClick}>
         {isActive && (
           <span className="absolute inset-0 rounded-full bg-[#c8b87a] opacity-30 animate-ping" />
         )}
@@ -140,9 +145,10 @@ function ProgressBar({ done, total }) {
 // ─── PathView ────────────────────────────────────────────────────────────────
 
 export default function PathView() {
-  const [tasks,   setTasks]   = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error,   setError]   = useState(null)
+  const [tasks,     setTasks]     = useState([])
+  const [loading,   setLoading]   = useState(true)
+  const [error,     setError]     = useState(null)
+  const [menuTaskId, setMenuTaskId] = useState(null)
 
   // Modal state machine
   const [modal,            setModal]            = useState(null) // 'pretimer'|'timer'|'incomplete'|'gift'
@@ -247,6 +253,16 @@ export default function PathView() {
     fetchTasks()
   }
 
+  function handleMenu(task) {
+    setMenuTaskId(prev => prev === task.id ? null : task.id)
+  }
+
+  async function handleDeleteTask(taskId) {
+    setMenuTaskId(null)
+    await fetch(`http://localhost:8000/tasks/${taskId}`, { method: 'DELETE' })
+    fetchTasks()
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (loading) return (
@@ -286,7 +302,41 @@ export default function PathView() {
                 <div className="flex flex-col items-center">
                   {sectionTasks.map((task, idx) => (
                     <div key={task.id} className="flex flex-col items-center">
-                      <TaskNode task={task} onActivate={handleActivate} />
+                      <TaskNode task={task} onActivate={handleActivate} onMenu={handleMenu} />
+
+                      {/* Inline action menu for done/locked nodes */}
+                      {menuTaskId === task.id && (
+                        <div style={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'center',
+                          gap: 6, marginTop: 8, marginBottom: 4,
+                        }}>
+                          <button
+                            onClick={() => handleDeleteTask(task.id)}
+                            style={{
+                              fontSize: 12, fontWeight: 600,
+                              color: '#c47a6a',
+                              background: 'rgba(196,122,106,0.10)',
+                              border: '1px solid rgba(196,122,106,0.25)',
+                              borderRadius: 20,
+                              padding: '5px 18px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Delete task
+                          </button>
+                          <button
+                            onClick={() => setMenuTaskId(null)}
+                            style={{
+                              fontSize: 11, color: '#5a5650',
+                              background: 'none', border: 'none',
+                              cursor: 'pointer', padding: '2px 8px',
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
+
                       {idx < sectionTasks.length - 1 && (
                         <div className="w-px h-8 border-l-2 border-dashed border-[#1e1e1e] my-1" />
                       )}
