@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Integer, String, Text, DateTime, Float, ForeignKey
+from sqlalchemy import Integer, String, Text, DateTime, Float, Boolean, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
 
@@ -23,6 +23,11 @@ class Task(Base):
     section: Mapped[str | None] = mapped_column(String(20), nullable=True)                # morning | focus | growth | evening
     duration_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)          # pre-populates the timer
     stars_average: Mapped[float | None] = mapped_column(Float, nullable=True)  # avg task stars that day (0-5)
+    recurrence: Mapped[str] = mapped_column(String(20), default="once", nullable=False)          # once | daily | weekdays | weekly | custom
+    recurrence_days: Mapped[str | None] = mapped_column(Text, nullable=True)                     # JSON list of weekday ints [0-6] for custom
+    start_date: Mapped[str | None] = mapped_column(String(20), nullable=True)                    # "2026-05-21"
+    end_date: Mapped[str | None] = mapped_column(String(20), nullable=True)                      # "2026-08-01"
+    last_completed_date: Mapped[str | None] = mapped_column(String(20), nullable=True)           # tracks same-day completion for reset logic
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
 
@@ -44,6 +49,23 @@ class Goal(Base):
     parent_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("goals.id"), nullable=True)  # for sub-goals
     children: Mapped[list["Goal"]] = relationship("Goal", back_populates="parent")
     parent: Mapped["Goal | None"] = relationship("Goal", back_populates="children", remote_side=[id])
+    tasks: Mapped[list["GoalTask"]] = relationship("GoalTask", back_populates="goal", cascade="all, delete-orphan")
+
+
+# ─────────────────────────────────────────────
+# GOAL TASK
+# A sub-task / checklist item belonging to a Goal.
+# Progress on the Goal is computed from these.
+# ─────────────────────────────────────────────
+class GoalTask(Base):
+    __tablename__ = "goal_tasks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    goal_id: Mapped[int] = mapped_column(Integer, ForeignKey("goals.id"), nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_done: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    goal: Mapped["Goal"] = relationship("Goal", back_populates="tasks")
 
 
 # ─────────────────────────────────────────────

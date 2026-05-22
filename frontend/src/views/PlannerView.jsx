@@ -12,6 +12,15 @@ const SECTION_META = {
 const SECTIONS = ['morning', 'focus', 'growth', 'evening']
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+const RECURRENCE_OPTIONS = [
+  { id: 'once',     label: 'Once'     },
+  { id: 'daily',    label: 'Daily'    },
+  { id: 'weekdays', label: 'Weekdays' },
+  { id: 'weekly',   label: 'Weekly'   },
+  { id: 'custom',   label: 'Custom'   },
+]
+const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function getWeekDates() {
@@ -49,6 +58,8 @@ export default function PlannerView() {
     duration_minutes: 25,
     section: 'focus',
     dayIndex: new Date().getDay(),
+    recurrence: 'once',
+    recurrence_days: [],
   })
 
   const toastTimer  = useRef(null)
@@ -117,10 +128,14 @@ export default function PlannerView() {
         duration_minutes: form.duration_minutes,
         section:          form.section,
         due_date:         due.toISOString(),
+        recurrence:       form.recurrence,
+        recurrence_days:  form.recurrence === 'custom'
+                            ? JSON.stringify(form.recurrence_days)
+                            : null,
       }),
     })
 
-    setForm({ title: '', duration_minutes: 25, section: 'focus', dayIndex: new Date().getDay() })
+    setForm({ title: '', duration_minutes: 25, section: 'focus', dayIndex: new Date().getDay(), recurrence: 'once', recurrence_days: [] })
     setShowSheet(false)
     fetchTasks()
   }
@@ -323,6 +338,55 @@ export default function PlannerView() {
                     <span className="font-bold">{d.getDate()}</span>
                   </button>
                 ))}
+              </div>
+
+              {/* Recurrence selector */}
+              <div>
+                <p className="text-[#3d3d3d] text-[10px] mb-2 uppercase tracking-widest">Repeat</p>
+                <div className="flex gap-1.5 flex-wrap">
+                  {RECURRENCE_OPTIONS.map(opt => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, recurrence: opt.id }))}
+                      className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
+                        form.recurrence === opt.id
+                          ? 'border-[#c8b87a] text-[#c8b87a] bg-[#c8b87a]/10'
+                          : 'border-[#222] text-[#3d3d3d] bg-[#1a1a1a]'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom day toggles */}
+                {form.recurrence === 'custom' && (
+                  <div className="flex gap-1.5 justify-between mt-3">
+                    {WEEKDAY_LABELS.map((label, i) => {
+                      const active = form.recurrence_days.includes(i)
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setForm(f => ({
+                            ...f,
+                            recurrence_days: active
+                              ? f.recurrence_days.filter(d => d !== i)
+                              : [...f.recurrence_days, i],
+                          }))}
+                          className={`w-9 h-9 rounded-full text-[11px] font-bold border transition-colors ${
+                            active
+                              ? 'border-[#c8b87a] text-[#c8b87a] bg-[#c8b87a]/10'
+                              : 'border-[#222] text-[#3d3d3d]'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Sheet actions */}

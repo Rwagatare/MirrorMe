@@ -27,13 +27,37 @@ function groupBySection(tasks) {
   return groups
 }
 
-// First todo task is "active"; everything after it is "locked"; done stays done
+function currentSection() {
+  const h = new Date().getHours()
+  if (h >= 6  && h <= 11) return 'morning'
+  if (h >= 12 && h <= 16) return 'focus'
+  if (h >= 17 && h <= 19) return 'growth'
+  return 'evening' // 20-23 and 0-5
+}
+
+// Active node = first todo task in the current time-of-day section;
+// if that section is all done, fall through to the next section with a todo task.
 function withDisplayState(tasks) {
-  let activeSeen = false
+  const section    = currentSection()
+  const sectionIdx = SECTION_ORDER.indexOf(section)
+
+  // Build ordered list of sections starting from current, wrapping around
+  const orderedSections = [
+    ...SECTION_ORDER.slice(sectionIdx),
+    ...SECTION_ORDER.slice(0, sectionIdx),
+  ]
+
+  // Find the id of the task that should be active
+  let activeId = null
+  for (const s of orderedSections) {
+    const firstTodo = tasks.find(t => (t.section ?? 'morning') === s && (t.status ?? 'todo') !== 'done')
+    if (firstTodo) { activeId = firstTodo.id; break }
+  }
+
   return tasks.map(task => {
     const status = task.status ?? 'todo'
-    if (status === 'done') return { ...task, displayState: 'done' }
-    if (!activeSeen) { activeSeen = true; return { ...task, displayState: 'active' } }
+    if (status === 'done')      return { ...task, displayState: 'done'   }
+    if (task.id === activeId)   return { ...task, displayState: 'active' }
     return { ...task, displayState: 'locked' }
   })
 }
@@ -132,7 +156,7 @@ export default function PathView() {
   // Returns the fresh task list so callers can inspect it immediately
   async function fetchTasks() {
     try {
-      const res = await fetch('http://localhost:8000/tasks/')
+      const res = await fetch('http://localhost:8000/tasks/today')
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       setTasks(data)
