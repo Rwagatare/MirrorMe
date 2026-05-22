@@ -25,8 +25,8 @@ export default function Timer({ task, duration, isLate, starCap = 5, onDone, onC
   const elapsed  = totalSec - secsLeft
   const progress = totalSec === 0 ? 1 : Math.min(1, elapsed / totalSec)
 
-  // Star ceiling: late start → max 3, mid-session adjust → max 2, extension (starCap=1) → max 1
-  const effectiveCap  = Math.min(starCap, isLate ? 3 : 5, adjusted ? 2 : 5)
+  // Star ceiling: late start → max 4, mid-session adjust → max 3, extension (starCap=1) → max 1
+  const effectiveCap  = Math.min(starCap, isLate ? 4 : 5, adjusted ? 3 : 5)
   const earnedStars   = Math.min(effectiveCap, Math.floor(progress * 5))
 
   // Keep a ref so the interval closure can read the current earnedStars on time-up
@@ -112,8 +112,8 @@ export default function Timer({ task, duration, isLate, starCap = 5, onDone, onC
           {starCap < 5 && !adjusted && !isLate
             ? `Extension · max ${starCap} ★`
             : adjusted
-            ? 'Adjusted · max 2 ★'
-            : 'Late start · max 3 ★'}
+            ? 'Adjusted · max 3 ★'
+            : 'Late start · max 4 ★'}
         </p>
       )}
 
