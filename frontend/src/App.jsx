@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import PathView    from './views/PathView'
-import PlannerView from './views/PlannerView'
-import GoalsView   from './views/GoalsView'
-import MirrorView  from './views/MirrorView'
-import AIView      from './views/AIView'
-import YouView     from './views/YouView'
+import PathView     from './views/PathView'
+import PlannerView  from './views/PlannerView'
+import GoalsView    from './views/GoalsView'
+import MirrorView   from './views/MirrorView'
+import AIView       from './views/AIView'
+import YouView      from './views/YouView'
+import MemoryButton from './components/MemoryButton'
+import Onboarding   from './components/Onboarding'
 
 // ─── SVG line icons ───────────────────────────────────────────────────────────
 // All icons share the same 24×24 viewBox, 1.5 stroke-width, no fill.
@@ -67,6 +69,15 @@ const YouIcon = () => (
   </svg>
 )
 
+// Pen/edit icon for the memory header button
+const PenIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+    stroke="#c8b87a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+)
+
 // ─── Tab config ───────────────────────────────────────────────────────────────
 
 const TABS = [
@@ -81,15 +92,45 @@ const TABS = [
 // ─── App ─────────────────────────────────────────────────────────────────────
 
 function App() {
-  const [activeTab, setActiveTab] = useState('path')
+  const [activeTab,   setActiveTab]   = useState('path')
+  const [timerActive, setTimerActive] = useState(false)
+  const [memOpen,     setMemOpen]     = useState(false)
+  const [onboarded,   setOnboarded]   = useState(
+    () => !!localStorage.getItem('mirrorme_onboarded')
+  )
 
   return (
     <div className="flex justify-center bg-[#0f0f0f] min-h-screen">
       <div className="w-full max-w-[420px] flex flex-col h-screen bg-[#0f0f0f]">
 
+        {/* ── Global header — pen/memory access ────────────────── */}
+        <div
+          style={{
+            flexShrink: 0, height: 40,
+            display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+            paddingRight: 16,
+          }}
+        >
+          <button
+            onClick={() => setMemOpen(true)}
+            disabled={timerActive}
+            title="Log a memory"
+            style={{
+              width: 36, height: 36, borderRadius: '50%',
+              background: '#1e1e1e', border: 'none',
+              cursor: timerActive ? 'default' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              opacity: timerActive ? 0.25 : 1,
+              transition: 'opacity 0.2s',
+            }}
+          >
+            <PenIcon />
+          </button>
+        </div>
+
         {/* ── Content area ─────────────────────────────────── */}
         <main className="flex-1 flex flex-col overflow-hidden">
-          {activeTab === 'path'    && <PathView />}
+          {activeTab === 'path'    && <PathView onTimerActive={setTimerActive} />}
           {activeTab === 'planner' && <PlannerView />}
           {activeTab === 'goals'   && <GoalsView />}
           {activeTab === 'mirror'  && <MirrorView />}
@@ -124,6 +165,21 @@ function App() {
         </nav>
 
       </div>
+
+      {/* Memory sheets — controlled by header pen icon */}
+      <MemoryButton open={memOpen} onClose={() => setMemOpen(false)} />
+
+      {/* First-time onboarding overlay */}
+      {!onboarded && (
+        <Onboarding
+          onDone={() => {
+            localStorage.setItem('mirrorme_onboarded', 'true')
+            setOnboarded(true)
+          }}
+          onTabChange={setActiveTab}
+        />
+      )}
+
     </div>
   )
 }

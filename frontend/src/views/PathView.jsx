@@ -144,10 +144,10 @@ function ProgressBar({ done, total }) {
 
 // ─── PathView ────────────────────────────────────────────────────────────────
 
-export default function PathView() {
-  const [tasks,     setTasks]     = useState([])
-  const [loading,   setLoading]   = useState(true)
-  const [error,     setError]     = useState(null)
+export default function PathView({ onTimerActive }) {
+  const [tasks,      setTasks]      = useState([])
+  const [loading,    setLoading]    = useState(true)
+  const [error,      setError]      = useState(null)
   const [menuTaskId, setMenuTaskId] = useState(null)
 
   // Modal state machine
@@ -176,6 +176,11 @@ export default function PathView() {
   }
 
   useEffect(() => { fetchTasks() }, [])
+
+  // Notify App when the timer overlay is open so it can hide the memory button
+  useEffect(() => {
+    onTimerActive?.(modal === 'pretimer' || modal === 'timer' || modal === 'incomplete')
+  }, [modal])
 
   // ── Modal handlers ────────────────────────────────────────────────────────
 

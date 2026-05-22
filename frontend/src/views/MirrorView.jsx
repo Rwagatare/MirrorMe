@@ -37,6 +37,48 @@ function parseCompletions(str) {
   try { return JSON.parse(str || '[]') } catch { return [] }
 }
 
+function isoDateOffset(days) {
+  const d = new Date()
+  d.setDate(d.getDate() + days)
+  return toISODate(d)
+}
+
+function groupMemories(entries) {
+  const today     = toISODate(new Date())
+  const yesterday = isoDateOffset(-1)
+  const sun       = new Date()
+  sun.setDate(sun.getDate() - sun.getDay())
+  const weekStart = toISODate(sun)
+
+  const sorted = [...entries].sort((a, b) => (b.date > a.date ? 1 : -1))
+  const groups = []
+  const seen   = new Map()
+
+  for (const entry of sorted) {
+    let label
+    if      (entry.date === today)     label = 'Today'
+    else if (entry.date === yesterday) label = 'Yesterday'
+    else if (entry.date >= weekStart)  label = 'This week'
+    else {
+      const [year, month] = entry.date.split('-')
+      label = new Date(Number(year), Number(month) - 1, 1)
+        .toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    }
+    if (!seen.has(label)) { seen.set(label, groups.length); groups.push({ label, entries: [] }) }
+    groups[seen.get(label)].entries.push(entry)
+  }
+  return groups
+}
+
+function splitGroups(groups, limit) {
+  let count = 0
+  for (let i = 0; i < groups.length; i++) {
+    count += groups[i].entries.length
+    if (count >= limit) return { visible: groups.slice(0, i + 1), hidden: groups.slice(i + 1) }
+  }
+  return { visible: groups, hidden: [] }
+}
+
 function computeStreak(completions) {
   if (!completions.length) return 0
   const set = new Set(completions)
@@ -53,11 +95,14 @@ function computeStreak(completions) {
 // ─── MirrorView ───────────────────────────────────────────────────────────────
 
 export default function MirrorView() {
-  const [tasks,     setTasks]     = useState([])
-  const [habits,    setHabits]    = useState([])
-  const [loading,   setLoading]   = useState(true)
-  const [showModal, setShowModal] = useState(false)
-  const [newHabit,  setNewHabit]  = useState({ emoji: '', title: '' })
+  const [tasks,      setTasks]      = useState([])
+  const [habits,     setHabits]     = useState([])
+  const [memories,   setMemories]   = useState([])
+  const [expandedIds, setExpandedIds] = useState([])
+  const [showOlder,   setShowOlder]   = useState(false)
+  const [loading,    setLoading]    = useState(true)
+  const [showModal,  setShowModal]  = useState(false)
+  const [newHabit,   setNewHabit]   = useState({ emoji: '', title: '' })
 
   const weekDates = getWeekDates()
   const todayStr  = toISODate(new Date())
@@ -66,12 +111,18 @@ export default function MirrorView() {
     Promise.all([
       fetch('http://localhost:8000/tasks/').then(r => r.ok ? r.json() : []),
       fetch('http://localhost:8000/habits/').then(r => r.ok ? r.json() : []),
-    ]).then(([t, h]) => {
+      fetch('http://localhost:8000/memory/').then(r => r.ok ? r.json() : []),
+    ]).then(([t, h, m]) => {
       setTasks(t)
       setHabits(h)
+      setMemories(m)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
+
+  function toggleExpand(id) {
+    setExpandedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
 
   // ── Stars bar chart ───────────────────────────────────────────────────────
 
@@ -303,6 +354,110 @@ export default function MirrorView() {
             })}
           </div>
         )}
+      </div>
+
+      {/* ── D: Memory log ────────────────────────────────────────────────── */}
+      <div className="mx-4 mt-4 mb-4">
+        <p className="text-[#3d3d3d] text-[10px] uppercase tracking-widest mb-1">Your memory</p>
+        <p className="text-[#2a2a2a] text-[10px] mb-3">Recent logs and journal entries</p>
+
+        {memories.length === 0 ? (
+          <p className="text-[#3a3a3a] text-xs text-center py-6">
+            No memories yet — use the ✏️ button to log your first one
+          </p>
+        ) : (() => {
+          const groups   = groupMemories(memories)
+          const { visible, hidden } = splitGroups(groups, 10)
+          const displayed = showOlder ? groups : visible
+          const hiddenCount = hidden.reduce((s, g) => s + g.entries.length, 0)
+
+          return (
+            <>
+              {displayed.map(group => (
+                <div key={group.label} style={{ marginBottom: 4 }}>
+                  {/* Sticky group header */}
+                  <div style={{
+                    position: 'sticky', top: 0, zIndex: 2,
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 0 6px',
+                    background: '#0f0f0f',
+                  }}>
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, textTransform: 'uppercase',
+                      letterSpacing: '0.10em', color: '#c8b87a', whiteSpace: 'nowrap',
+                    }}>
+                      {group.label}
+                    </span>
+                    <div style={{ flex: 1, height: 1, background: '#1e1e1e' }} />
+                  </div>
+
+                  {/* Entries */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {group.entries.map(entry => {
+                      const isExpanded  = expandedIds.includes(entry.id)
+                      const isJournal   = entry.entry_type === 'journal'
+                      const badgeColor  = isJournal ? '#c8b87a' : '#4a9d8a'
+                      const badgeBg     = isJournal ? 'rgba(200,184,122,0.10)' : 'rgba(74,157,138,0.10)'
+                      const badgeBorder = isJournal ? 'rgba(200,184,122,0.20)' : 'rgba(74,157,138,0.20)'
+
+                      return (
+                        <div
+                          key={entry.id}
+                          style={{ background: '#161616', border: '1px solid #2a2a2a', borderRadius: 14, padding: '12px 14px' }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <span style={{
+                              fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+                              color: badgeColor, background: badgeBg,
+                              border: `1px solid ${badgeBorder}`,
+                              borderRadius: 20, padding: '2px 8px',
+                            }}>
+                              {entry.entry_type ?? 'note'}
+                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              {entry.mood && <span style={{ fontSize: 14, lineHeight: 1 }}>{entry.mood}</span>}
+                              {entry.time_of_day && (
+                                <span style={{ fontSize: 10, color: '#3d3d3d' }}>{entry.time_of_day}</span>
+                              )}
+                            </div>
+                          </div>
+                          <p
+                            onClick={() => toggleExpand(entry.id)}
+                            style={{
+                              fontSize: 12, color: '#c8c4bc', lineHeight: 1.6, margin: 0,
+                              cursor: 'pointer',
+                              display: '-webkit-box',
+                              WebkitLineClamp: isExpanded ? 'unset' : 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: isExpanded ? 'visible' : 'hidden',
+                            }}
+                          >
+                            {entry.content}
+                          </p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              {!showOlder && hiddenCount > 0 && (
+                <button
+                  onClick={() => setShowOlder(true)}
+                  style={{
+                    width: '100%', marginTop: 8,
+                    padding: '10px', border: '1px solid #2a2a2a',
+                    borderRadius: 12, background: 'none',
+                    color: '#5a5650', fontSize: 12, cursor: 'pointer',
+                    transition: 'color 0.15s',
+                  }}
+                >
+                  Show older entries ({hiddenCount} more)
+                </button>
+              )}
+            </>
+          )
+        })()}
       </div>
 
       {/* Add habit modal */}

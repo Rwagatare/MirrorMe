@@ -50,9 +50,10 @@ function taskDateKey(task) {
 // ─── PlannerView ─────────────────────────────────────────────────────────────
 
 export default function PlannerView() {
-  const [tasks, setTasks]               = useState([])
-  const [showSheet, setShowSheet]       = useState(false)
-  const [toast, setToast]               = useState(null)
+  const [tasks,           setTasks]           = useState([])
+  const [memDates,        setMemDates]        = useState(new Set())
+  const [showSheet,       setShowSheet]       = useState(false)
+  const [toast,           setToast]           = useState(null)
   const [hoveredDeleteId, setHoveredDeleteId] = useState(null)
   const [form, setForm]           = useState({
     title: '',
@@ -68,7 +69,13 @@ export default function PlannerView() {
   const weekDates   = getWeekDates()
   const todayStr    = toISODate(new Date())
 
-  useEffect(() => { fetchTasks() }, [])
+  useEffect(() => {
+    fetchTasks()
+    fetch('http://localhost:8000/memory/')
+      .then(r => r.ok ? r.json() : [])
+      .then(entries => setMemDates(new Set(entries.map(e => e.date))))
+      .catch(() => {})
+  }, [])
 
   async function fetchTasks() {
     try {
@@ -221,6 +228,17 @@ export default function PlannerView() {
                   }}>
                     {date.getDate()}
                   </p>
+                  {/* Memory dot — shown when a memory entry exists for this day */}
+                  {memDates.has(ds) && (
+                    <div
+                      title="Memory logged"
+                      style={{
+                        width: 6, height: 6, borderRadius: '50%',
+                        background: '#c8b87a',
+                        margin: '4px auto 0',
+                      }}
+                    />
+                  )}
                 </div>
 
                 {/* Drop zone / task pills */}
