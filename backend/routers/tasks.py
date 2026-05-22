@@ -11,21 +11,22 @@ from typing import Optional
 class TaskCreate(BaseModel):
     title: str
     notes: Optional[str] = None
-    due_date: Optional[str] = None
-    reminder_time: Optional[str] = None
+    due_date: Optional[datetime] = None
+    reminder_time: Optional[datetime] = None
     priority: str = "low"
     status: str = "todo"
     section: str = "morning"
     duration_minutes: int = 25
     stars_average: Optional[float] = None
 
-class TaskUpdate(BaseModel): 
-    title: Optional[str] = None 
-    status: Optional[str] = None 
-    stars: Optional[int] = None 
-    priority: Optional[str] = None 
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    status: Optional[str] = None
+    stars_average: Optional[float] = None
+    priority: Optional[str] = None
     section: Optional[str] = None
     duration_minutes: Optional[int] = None
+    due_date: Optional[datetime] = None
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
