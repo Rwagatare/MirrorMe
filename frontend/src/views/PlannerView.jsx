@@ -182,7 +182,7 @@ export default function PlannerView() {
 
       {/* 7-day kanban columns — horizontal scroll */}
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
-        <div className="flex h-full gap-2 px-3 pb-3 min-w-max">
+        <div className="flex h-full gap-2 px-3 pb-3 min-w-max" data-planner-columns="true">
           {weekDates.map((date) => {
             const ds       = toISODate(date)
             const isToday  = ds === todayStr
