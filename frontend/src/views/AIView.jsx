@@ -420,6 +420,7 @@ export default function AIView() {
           <textarea
             ref={textareaRef}
             rows={1}
+            data-ai-input="true"
             placeholder="Ask MirrorMe…  (Enter to send)"
             value={input}
             onChange={e => {

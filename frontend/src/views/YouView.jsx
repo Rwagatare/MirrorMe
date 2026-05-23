@@ -220,7 +220,7 @@ export default function YouView() {
       </div>
 
       {/* ── 3. Free time activities ──────────────────────────────────────── */}
-      <div className="mx-4 mb-4">
+      <div className="mx-4 mb-4" data-activities-section="true">
         <p style={{ fontSize: 9, fontWeight: 700, color: '#3d3d3d', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8 }}>
           Free Time Activities
         </p>
@@ -271,6 +271,7 @@ export default function YouView() {
                     <p style={{ fontSize: 10, color: '#5a5650', marginTop: 1 }}>{act.duration} min</p>
                   </div>
                   <button onClick={() => startEdit(i)}
+                    {...(i === 0 ? { 'data-first-activity-edit': 'true' } : {})}
                     style={{ color: '#3a3a3a', background: 'none', border: 'none', cursor: 'pointer', padding: 2, lineHeight: 1 }}>
                     <PencilIcon />
                   </button>

@@ -41,7 +41,7 @@ function formatDeadline(dateStr) {
 
 // ─── GoalCard ─────────────────────────────────────────────────────────────────
 
-function GoalCard({ goal, color, onRefetch }) {
+function GoalCard({ goal, color, onRefetch, onDelete }) {
   const [expanded, setExpanded] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [adding, setAdding]     = useState(false)
@@ -77,19 +77,30 @@ function GoalCard({ goal, color, onRefetch }) {
 
   return (
     <div style={{ borderLeft: `3px solid ${color}` }} className="bg-[#161616] rounded-xl overflow-hidden">
-      <button onClick={() => setExpanded(v => !v)} className="w-full text-left px-3 py-3">
-        <div className="flex items-center gap-2 mb-2">
-          <span style={{ background: color }} className="w-2 h-2 rounded-full flex-shrink-0" />
-          <span className="text-[#e8e4dc] text-xs font-medium leading-tight flex-1">{goal.title}</span>
-          <span style={{ color }} className="text-[10px] font-bold ml-1 flex-shrink-0">{Math.round(pct)}%</span>
-          <span className="text-[#3d3d3d] text-[10px] ml-1 flex-shrink-0">{expanded ? '▲' : '▼'}</span>
-        </div>
-        <div className="w-full h-1 bg-[#2a2a2a] rounded-full overflow-hidden">
-          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color }} />
-        </div>
-        {deadline && <p className="text-[9px] text-[#3d3d3d] mt-1.5">{deadline}</p>}
-      </button>
 
+      {/* Card header: expand toggle + delete */}
+      <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+        <button onClick={() => setExpanded(v => !v)} className="flex-1 text-left px-3 py-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span style={{ background: color }} className="w-2 h-2 rounded-full flex-shrink-0" />
+            <span className="text-[#e8e4dc] text-xs font-medium leading-tight flex-1">{goal.title}</span>
+            <span style={{ color }} className="text-[10px] font-bold ml-1 flex-shrink-0">{Math.round(pct)}%</span>
+            <span className="text-[#3d3d3d] text-[10px] ml-1 flex-shrink-0">{expanded ? '▲' : '▼'}</span>
+          </div>
+          <div className="w-full h-1 bg-[#2a2a2a] rounded-full overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color }} />
+          </div>
+          {deadline && <p className="text-[9px] text-[#3d3d3d] mt-1.5">{deadline}</p>}
+        </button>
+        <button
+          onClick={() => onDelete(goal)}
+          style={{ padding: '10px 10px 0 0', color: '#3a3a3a', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, lineHeight: 1, flexShrink: 0 }}
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Expanded sub-tasks */}
       {expanded && (
         <div className="px-3 pb-3 border-t border-[#2a2a2a] pt-2">
           {tasks.length === 0 && (
@@ -172,8 +183,13 @@ export default function GoalsView() {
     setLoading(false)
   }
 
-  // Sub-task mutations: update data only, never reset animation
   function silentRefetch() { fetchGoals(false) }
+
+  async function handleDeleteGoal(goal) {
+    if (!window.confirm(`Delete "${goal.title}" and all its sub-tasks?`)) return
+    await fetch(`http://localhost:8000/goals/${goal.id}`, { method: 'DELETE' })
+    fetchGoals(true)
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -277,6 +293,7 @@ export default function GoalsView() {
       <div className="flex items-center justify-between px-4 pt-4 pb-2 flex-shrink-0">
         <h1 className="text-white text-sm font-semibold tracking-wide">Goals</h1>
         <button onClick={() => setShowModal(true)}
+          data-new-goal-btn="true"
           className="text-[10px] font-semibold text-[#0f0f0f] bg-[#c8b87a] px-3 py-1.5 rounded-full tracking-wide active:opacity-80 transition-opacity">
           + New goal
         </button>
@@ -295,12 +312,13 @@ export default function GoalsView() {
         )}
         {!loading && goals.length > 0 && (
           <>
-            <div className="mt-2 mb-6">{renderTree()}</div>
+            <div className="mt-2 mb-6" data-goals-tree="true">{renderTree()}</div>
             <div className="grid grid-cols-2 gap-3">
               {goals.map((goal, idx) => (
                 <GoalCard key={goal.id} goal={goal}
                   color={BRANCH_COLORS[idx % BRANCH_COLORS.length]}
                   onRefetch={silentRefetch}
+                  onDelete={handleDeleteGoal}
                 />
               ))}
             </div>

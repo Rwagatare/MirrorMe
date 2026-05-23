@@ -114,6 +114,7 @@ function App() {
           <button
             onClick={() => setMemOpen(true)}
             disabled={timerActive}
+            data-memory-btn="true"
             title="Log a memory"
             style={{
               width: 36, height: 36, borderRadius: '50%',
@@ -177,6 +178,7 @@ function App() {
             setOnboarded(true)
           }}
           onTabChange={setActiveTab}
+          onOpenMemory={() => setMemOpen(true)}
         />
       )}
 

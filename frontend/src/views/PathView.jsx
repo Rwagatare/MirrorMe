@@ -95,7 +95,7 @@ function TaskNode({ task, onActivate, onMenu }) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className={circleClass} onClick={handleClick}>
+      <div className={circleClass} onClick={handleClick} {...(isActive ? { 'data-active-node': 'true' } : {})}>
         {isActive && (
           <span className="absolute inset-0 rounded-full bg-[#c8b87a] opacity-30 animate-ping" />
         )}

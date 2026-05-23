@@ -357,7 +357,7 @@ export default function MirrorView() {
       </div>
 
       {/* ── D: Memory log ────────────────────────────────────────────────── */}
-      <div className="mx-4 mt-4 mb-4">
+      <div className="mx-4 mt-4 mb-4" data-memory-section="true">
         <p className="text-[#3d3d3d] text-[10px] uppercase tracking-widest mb-1">Your memory</p>
         <p className="text-[#2a2a2a] text-[10px] mb-3">Recent logs and journal entries</p>
 
