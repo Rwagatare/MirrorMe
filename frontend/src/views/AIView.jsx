@@ -99,6 +99,13 @@ Goals:
 ${goalLines}
 Respond in 2-3 sentences. Be direct and actionable.
 
+MOOD QUESTIONS — when a message in this conversation provides "Mood data for the last N day(s)"
+or "Relevant memories" with mood values attached, use it directly to answer questions about
+how the user has been feeling: state whether the overall mood was positive, mixed, or negative,
+and back it up with specifics from the log entries (quote or paraphrase what they wrote and on
+what date). Don't guess at mood if no such data was provided in this conversation — say you
+don't have enough logged entries to tell instead.
+
 TASK CREATION RULES — read carefully and follow exactly:
 - NEVER use the action tag unless the user's message contains explicit confirmation words such as: "add it", "create it", "do it", "yes", "sure", "add that", "add them", "create those", "schedule it", "put it on my path".
 - CRITICAL: Never use [ACTION: create_task] unless the user's message contains words like: "add it", "create it", "do it", "yes", "sure", "add that", "add them", "create those", "schedule it", "put it on my path". If the user is just asking for suggestions or advice, respond with text only. No ACTION tags.
@@ -121,6 +128,8 @@ The app executes and hides the tag automatically.`
 function nowHHMM() {
   return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
 }
+
+const MOOD_QUERY_RE = /\b(mood|feeling|feelings|emotion|emotions|emotional)\b/i
 
 const CHAT_KEY = 'mirrorme_chat_history'
 
@@ -280,7 +289,60 @@ export default function AIView() {
     }
 
     try {
+      // Fetch semantically relevant memories to inject as context
+      const contextMsgs = []
+      try {
+        const memRes = await fetch(
+          `http://localhost:8000/memory/search?q=${encodeURIComponent(text)}`,
+          { signal: AbortSignal.timeout(4000) }
+        )
+        if (memRes.ok) {
+          const memories = await memRes.json()
+          if (Array.isArray(memories) && memories.length > 0) {
+            const lines = memories
+              .map(m => `[${m.date || '?'}${m.mood ? `, mood: ${m.mood}` : ''}] ${m.content}`)
+              .join('\n')
+            contextMsgs.push({
+              role: 'assistant',
+              content: `Relevant memories I found:\n${lines}`,
+            })
+          }
+        }
+      } catch { /* Ollama/backend down — continue without memories */ }
+
+      // Mood/emotion questions need real date-scoped aggregation, not
+      // semantic similarity — pull the mood summary separately.
+      if (MOOD_QUERY_RE.test(text)) {
+        try {
+          const days = /\bmonth\b/i.test(text) ? 30 : /\btoday\b/i.test(text) ? 1 : 7
+          const moodRes = await fetch(
+            `http://localhost:8000/memory/mood-summary?days=${days}`,
+            { signal: AbortSignal.timeout(4000) }
+          )
+          if (moodRes.ok) {
+            const summary = await moodRes.json()
+            if (summary.entry_count > 0) {
+              const entryLines = summary.entries
+                .map(e => `[${e.date}] mood: ${e.mood_label ?? e.mood ?? 'unknown'} — ${e.content}`)
+                .join('\n')
+              contextMsgs.push({
+                role: 'assistant',
+                content: `Mood data for the last ${summary.days} day(s) (since ${summary.since}): ` +
+                  `average mood is "${summary.average_label ?? 'unknown'}" (score ${summary.average_score ?? 'n/a'}/5) ` +
+                  `across ${summary.entry_count} logged entries.\n${entryLines}`,
+              })
+            }
+          }
+        } catch { /* backend down — continue without mood summary */ }
+      }
+
+      // Build messages: strip UI-only fields (ts, chip, chipOk) before sending
       const apiMessages = nextHistory.map(({ role, content }) => ({ role, content }))
+
+      // Inject context just before the final user message
+      const messagesWithMemory = contextMsgs.length
+        ? [...apiMessages.slice(0, -1), ...contextMsgs, apiMessages.at(-1)]
+        : apiMessages
 
       const res = await fetch(OLLAMA_CHAT, {
         method:  'POST',
@@ -290,7 +352,7 @@ export default function AIView() {
           stream:   false,
           messages: [
             { role: 'system', content: systemPromptRef.current },
-            ...apiMessages,
+            ...messagesWithMemory,
           ],
         }),
       })

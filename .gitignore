@@ -12,3 +12,5 @@ dist/
 .DS_Store
 models/
 backend/mirrorme_env/
+
+.mirrorme_config

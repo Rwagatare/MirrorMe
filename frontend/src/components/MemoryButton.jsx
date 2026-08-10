@@ -28,32 +28,34 @@ function todayISO() {
 // ─── Voice-to-text hook ───────────────────────────────────────────────────────
 // Tap to start, tap again to stop.
 // Interim results update the textarea live; final text is committed on stop.
-// toggle(currentContent, setContent) must be called with the current textarea
-// value each time so the hook can prefix the voice text correctly.
+// setContent(text) is the setter for the *current live value* (not an appender) —
+// pass toggle() the textarea's current content each time it's invoked.
+// Chrome ends recognition after a few seconds of silence even with
+// continuous=true, so we auto-restart on an unexpected onend to keep listening
+// until the user explicitly taps stop.
+
+const SPEECH_ERROR_MESSAGES = {
+  'not-allowed':   'Microphone access denied — allow it in your browser settings.',
+  'permission-denied': 'Microphone access denied — allow it in your browser settings.',
+  'audio-capture': 'No microphone found.',
+  'network':       'Speech recognition network error — check your connection.',
+  'no-speech':     null, // benign, handled via auto-restart
+  'aborted':       null, // benign, caused by our own stop()
+}
 
 function useSpeech() {
   const [recording,    setRecording]    = useState(false)
+  const [error,        setError]        = useState(null)
   const recognitionRef                  = useRef(null)
   const baseRef                         = useRef('') // textarea content when recording started
   const finalRef                        = useRef('') // accumulated final transcript
   const setContentRef                   = useRef(null)
+  const manualStopRef                   = useRef(false)
 
   const supported = typeof window !== 'undefined' &&
     ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
 
-  function toggle(currentContent, setContent) {
-    if (!supported) return
-    setContentRef.current = setContent
-
-    if (recording) {
-      recognitionRef.current?.stop()
-      setRecording(false)
-      return
-    }
-
-    baseRef.current  = currentContent
-    finalRef.current = ''
-
+  function start() {
     const SR  = window.SpeechRecognition || window.webkitSpeechRecognition
     const rec = new SR()
     rec.continuous     = true
@@ -73,20 +75,53 @@ function useSpeech() {
     }
 
     rec.onend = () => {
-      setRecording(false)
-      // Commit final text, drop any trailing interim
-      const settled = [baseRef.current, finalRef.current].filter(Boolean).join(' ').trim()
-      setContentRef.current?.(settled)
+      if (manualStopRef.current) {
+        setRecording(false)
+        const settled = [baseRef.current, finalRef.current].filter(Boolean).join(' ').trim()
+        setContentRef.current?.(settled)
+        return
+      }
+      // Unexpected end (Chrome silence timeout) — fold what we have into the
+      // base and keep listening rather than dropping the session.
+      baseRef.current  = [baseRef.current, finalRef.current].filter(Boolean).join(' ').trim()
+      finalRef.current = ''
+      start()
     }
 
-    rec.onerror = () => setRecording(false)
+    rec.onerror = e => {
+      const msg = SPEECH_ERROR_MESSAGES[e.error]
+      if (msg) {
+        setError(msg)
+        manualStopRef.current = true // fatal — don't auto-restart
+      }
+      // Non-fatal errors (no-speech, aborted) fall through to onend, which
+      // will auto-restart unless manualStopRef was set above.
+    }
 
     recognitionRef.current = rec
     rec.start()
+  }
+
+  function toggle(currentContent, setContent) {
+    if (!supported) return
+    setContentRef.current = setContent
+
+    if (recording) {
+      manualStopRef.current = true
+      recognitionRef.current?.stop()
+      setRecording(false)
+      return
+    }
+
+    setError(null)
+    baseRef.current    = currentContent || ''
+    finalRef.current   = ''
+    manualStopRef.current = false
+    start()
     setRecording(true)
   }
 
-  return { supported, recording, toggle }
+  return { supported, recording, error, toggle }
 }
 
 // ─── Shared pickers ──────────────────────────────────────────────────────────
@@ -152,9 +187,7 @@ function EntrySheet({ type, onClose, onSuccess }) {
   const [energy,  setEnergy]  = useState(null)
   const isJournal = type === 'journal'
 
-  const { supported: micOk, recording, toggle: toggleMic } = useSpeech(
-    text => setContent(prev => prev ? `${prev} ${text}` : text)
-  )
+  const { supported: micOk, recording, error: micError, toggle: toggleMic } = useSpeech()
 
   async function submit() {
     if (!content.trim()) return
@@ -218,7 +251,8 @@ function EntrySheet({ type, onClose, onSuccess }) {
           />
           {micOk && (
             <button
-              onClick={toggleMic}
+              type="button"
+              onClick={() => toggleMic(content, setContent)}
               style={{
                 width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
                 background: recording ? 'rgba(196,58,58,0.12)' : '#1a1a1a',
@@ -245,6 +279,9 @@ function EntrySheet({ type, onClose, onSuccess }) {
             </button>
           )}
         </div>
+        {micError && (
+          <p style={{ fontSize: 11, color: '#c43a3a', marginTop: 6 }}>{micError}</p>
+        )}
 
         <MoodPicker   value={mood}   onChange={setMood}   />
         <EnergyPicker value={energy} onChange={setEnergy} />
