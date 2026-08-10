@@ -250,6 +250,8 @@ export default function PlannerView() {
                         key={task.id}
                         draggable
                         onDragStart={() => onDragStart(task)}
+                        onMouseEnter={() => setHoveredDeleteId(task.id)}
+                        onMouseLeave={() => setHoveredDeleteId(id => (id === task.id ? null : id))}
                         style={{
                           background: '#1e1e1e',
                           borderLeft: `3px solid ${meta.borderColor}`,
@@ -260,10 +262,37 @@ export default function PlannerView() {
                           marginBottom: 6,
                           cursor: 'grab',
                           userSelect: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 6,
                         }}
                       >
-                        <span style={{ marginRight: 4 }}>{meta.emoji}</span>
-                        {task.title}
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ marginRight: 4 }}>{meta.emoji}</span>
+                          {task.title}
+                        </span>
+                        {hoveredDeleteId === task.id && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id, task.title) }}
+                            title="Delete task"
+                            style={{
+                              flexShrink: 0,
+                              width: 16, height: 16,
+                              lineHeight: '16px',
+                              textAlign: 'center',
+                              borderRadius: '50%',
+                              background: '#2a2a2a',
+                              color: '#c8b87a',
+                              fontSize: 10,
+                              border: 'none',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ✕
+                          </button>
+                        )}
                       </div>
                     )
                   })}
