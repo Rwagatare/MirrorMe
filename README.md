@@ -48,8 +48,15 @@ The result is MirrorMe — a local-first, AI-powered personal planner that doesn
 ## Quick start
 
 ```bash
-# Coming soon — setup script in progress
+./setup.sh   # one-time install: backend/frontend deps + model pull
+./start.sh   # launches backend, frontend, and Ollama
 ```
+
+## Architecture
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for data-flow diagrams, or the full
+[Contributor Onboarding Guide](https://docs.google.com/document/d/1CTdlnsnm-34Ai2OKQLPHZfM_QZZijbe1LDvPhAaRC-M/edit?usp=sharing)
+for stack rationale, a walkthrough, and known rough edges.
 
 ## Contributing
 
