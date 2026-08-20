@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import PreTimer      from '../components/PreTimer'
 import Timer         from '../components/Timer'
 import IncompleteNote from '../components/IncompleteNote'
@@ -81,6 +81,18 @@ function TaskNode({ task, onActivate, onMenu }) {
   const isActive = displayState === 'active'
   const isLocked = displayState === 'locked'
 
+  // Fire the completion pulse only on an active→done transition —
+  // never on mount, never on locked→active, never on repeat re-fetches.
+  const prevStateRef = useRef(displayState)
+  const [pulsing, setPulsing] = useState(false)
+
+  useEffect(() => {
+    if (prevStateRef.current === 'active' && displayState === 'done') {
+      setPulsing(true)
+    }
+    prevStateRef.current = displayState
+  }, [displayState])
+
   const base = 'w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold relative select-none'
   const circleClass = isDone
     ? `${base} bg-[#1f1f1f] text-[#3a3a3a] cursor-pointer`
@@ -95,7 +107,12 @@ function TaskNode({ task, onActivate, onMenu }) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className={circleClass} onClick={handleClick} {...(isActive ? { 'data-active-node': 'true' } : {})}>
+      <div
+        className={`${circleClass}${pulsing ? ' task-complete-pulse' : ''}`}
+        onClick={handleClick}
+        onAnimationEnd={() => setPulsing(false)}
+        {...(isActive ? { 'data-active-node': 'true' } : {})}
+      >
         {isActive && (
           <span className="absolute inset-0 rounded-full bg-[#c8b87a] opacity-30 animate-ping" />
         )}
@@ -294,6 +311,27 @@ export default function PathView({ onTimerActive }) {
 
   return (
     <>
+      <style>{`
+        @keyframes taskCompletePulse {
+          0%   { transform: scale(1);    }
+          45%  { transform: scale(1.18); }
+          100% { transform: scale(1);    }
+        }
+        .task-complete-pulse {
+          animation: taskCompletePulse 220ms ease-out;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .task-complete-pulse {
+            animation-name: taskCompletePulseReduced;
+            animation-duration: 180ms;
+          }
+        }
+        @keyframes taskCompletePulseReduced {
+          0%   { transform: scale(1);    }
+          50%  { transform: scale(1.04); }
+          100% { transform: scale(1);    }
+        }
+      `}</style>
       <div className="flex-1 flex flex-col overflow-y-auto">
         <ProgressBar done={done} total={tasks.length} />
 

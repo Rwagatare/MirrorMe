@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import MemoryCalendar from '../components/MemoryCalendar'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -103,6 +104,8 @@ export default function MirrorView() {
   const [loading,    setLoading]    = useState(true)
   const [showModal,  setShowModal]  = useState(false)
   const [newHabit,   setNewHabit]   = useState({ emoji: '', title: '' })
+  const [memoryView, setMemoryView] = useState('list') // 'list' | 'calendar'
+  const [chartType,  setChartType]  = useState('bar')  // 'bar' | 'line' | 'heatmap'
 
   const weekDates = getWeekDates()
   const todayStr  = toISODate(new Date())
@@ -124,6 +127,17 @@ export default function MirrorView() {
     setExpandedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
+  async function deleteMemory(id) {
+    const prev = memories
+    setMemories(m => m.filter(entry => entry.id !== id)) // optimistic
+    try {
+      const res = await fetch(`http://localhost:8000/memory/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+    } catch {
+      setMemories(prev) // roll back on failure
+    }
+  }
+
   // ── Stars bar chart ───────────────────────────────────────────────────────
 
   const doneTasks = tasks.filter(t => t.status === 'done' && t.stars_average != null)
@@ -142,6 +156,42 @@ export default function MirrorView() {
   const overallAvg = totalDone
     ? Math.round(doneTasks.reduce((s, t) => s + t.stars_average, 0) / totalDone * 10) / 10
     : 0
+
+  // ── Heatmap data (GitHub-contributions style, last 12 weeks) ──────────────
+
+  const HEATMAP_WEEKS = 12
+  const heatmapByDate = new Map()
+  for (const t of doneTasks) {
+    const ds = (t.due_date ?? t.created_at ?? '').slice(0, 10)
+    if (!ds) continue
+    if (!heatmapByDate.has(ds)) heatmapByDate.set(ds, [])
+    heatmapByDate.get(ds).push(t.stars_average)
+  }
+
+  const heatmapEnd   = new Date() // rewound to the current week's Sunday, so columns align Sun-Sat like GitHub
+  heatmapEnd.setHours(12, 0, 0, 0)
+  heatmapEnd.setDate(heatmapEnd.getDate() - heatmapEnd.getDay())
+  const heatmapStart = new Date(heatmapEnd)
+  heatmapStart.setDate(heatmapStart.getDate() - (HEATMAP_WEEKS - 1) * 7)
+
+  const heatmapWeeks = Array.from({ length: HEATMAP_WEEKS }, (_, w) =>
+    Array.from({ length: 7 }, (_, d) => {
+      const date = new Date(heatmapStart)
+      date.setDate(date.getDate() + w * 7 + d)
+      const ds     = toISODate(date)
+      const scores = heatmapByDate.get(ds)
+      const avg    = scores?.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null
+      return { date, ds, avg, future: date > new Date() }
+    })
+  )
+
+  function heatmapColor(avg) {
+    if (avg == null) return '#1e1e1e'
+    if (avg < 1)  return 'rgba(200,184,122,0.18)'
+    if (avg < 2)  return 'rgba(200,184,122,0.38)'
+    if (avg < 3.5) return 'rgba(200,184,122,0.62)'
+    return '#c8b87a'
+  }
 
   // ── Habit toggle ──────────────────────────────────────────────────────────
 
@@ -194,56 +244,135 @@ export default function MirrorView() {
         <p className="text-[#3d3d3d] text-[10px] mt-0.5">Reflections on your week</p>
       </div>
 
-      {/* ── A: Stars bar chart ───────────────────────────────────────────── */}
+      {/* ── A: Stars chart ───────────────────────────────────────────────── */}
       <div className="mx-4 mb-4 bg-[#161616] border border-[#2a2a2a] rounded-2xl p-4">
-        <p className="text-white text-xs font-semibold mb-0.5">This week's stars</p>
+        <div className="flex items-center justify-between mb-0.5">
+          <p className="text-white text-xs font-semibold">
+            {chartType === 'heatmap' ? 'Last 12 weeks' : "This week's stars"}
+          </p>
+          <div style={{ display: 'flex', gap: 2, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 10, padding: 2 }}>
+            {[['bar', 'Bar'], ['line', 'Line'], ['heatmap', 'Heat']].map(([v, label]) => (
+              <button
+                key={v}
+                onClick={() => setChartType(v)}
+                style={{
+                  fontSize: 10, fontWeight: 600, padding: '3px 9px', borderRadius: 8, border: 'none',
+                  cursor: 'pointer',
+                  background: chartType === v ? '#2a2a2a' : 'none',
+                  color: chartType === v ? '#c8b87a' : '#5a5650',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
         <p className="text-[#3d3d3d] text-[10px] mb-4">
           Avg: {overallAvg} ★ across {totalDone} task{totalDone !== 1 ? 's' : ''}
         </p>
 
-        <div className="flex items-end justify-between gap-1" style={{ height: MAX_BAR_H + 32 }}>
-          {weekDates.map((date, i) => {
-            const ds      = toISODate(date)
-            const isToday = ds === todayStr
-            const { avg } = starsByDay[i]
-            const barH    = avg != null ? Math.max(4, (avg / 5) * MAX_BAR_H) : 0
+        {chartType === 'bar' && (
+          <div className="flex items-end justify-between gap-1" style={{ height: MAX_BAR_H + 32 }}>
+            {weekDates.map((date, i) => {
+              const ds      = toISODate(date)
+              const isToday = ds === todayStr
+              const { avg } = starsByDay[i]
+              const barH    = avg != null ? Math.max(4, (avg / 5) * MAX_BAR_H) : 0
 
-            return (
-              <div key={ds} className="flex flex-col items-center flex-1 gap-1">
-                {/* Numeric label above bar */}
-                <span style={{
-                  fontSize: 9,
-                  color: avg != null ? (isToday ? '#c8b87a' : '#5a5a5a') : '#2a2a2a',
-                  minHeight: 14,
-                  display: 'block',
-                  textAlign: 'center',
-                }}>
-                  {avg != null ? avg : '–'}
-                </span>
-
-                {/* Bar track + fill */}
-                <div style={{ width: '100%', height: MAX_BAR_H, display: 'flex', alignItems: 'flex-end' }}>
-                  <div style={{
-                    width: '100%',
-                    height: barH,
-                    borderRadius: 4,
-                    background: isToday ? '#c8b87a' : 'rgba(200,184,122,0.30)',
-                    transition: 'height 0.6s cubic-bezier(0.4,0,0.2,1)',
-                  }} />
+              return (
+                <div key={ds} className="flex flex-col items-center flex-1 gap-1">
+                  <span style={{
+                    fontSize: 9,
+                    color: avg != null ? (isToday ? '#c8b87a' : '#5a5a5a') : '#2a2a2a',
+                    minHeight: 14, display: 'block', textAlign: 'center',
+                  }}>
+                    {avg != null ? avg : '–'}
+                  </span>
+                  <div style={{ width: '100%', height: MAX_BAR_H, display: 'flex', alignItems: 'flex-end' }}>
+                    <div style={{
+                      width: '100%', height: barH, borderRadius: 4,
+                      background: isToday ? '#c8b87a' : 'rgba(200,184,122,0.30)',
+                      transition: 'height 0.6s cubic-bezier(0.4,0,0.2,1)',
+                    }} />
+                  </div>
+                  <span style={{ fontSize: 9, color: isToday ? '#c8b87a' : '#3d3d3d', fontWeight: isToday ? 700 : 400 }}>
+                    {DAYS_SHORT[date.getDay()]}
+                  </span>
                 </div>
+              )
+            })}
+          </div>
+        )}
 
-                {/* Day abbreviation */}
-                <span style={{
-                  fontSize: 9,
-                  color: isToday ? '#c8b87a' : '#3d3d3d',
-                  fontWeight: isToday ? 700 : 400,
-                }}>
-                  {DAYS_SHORT[date.getDay()]}
-                </span>
+        {chartType === 'line' && (() => {
+          const W = 320, H = MAX_BAR_H, PAD = 10
+          const points = starsByDay.map((d, i) => ({
+            x: PAD + (i / 6) * (W - PAD * 2),
+            y: d.avg != null ? H - (d.avg / 5) * H : null,
+            avg: d.avg,
+          }))
+          const known = points.filter(p => p.avg != null)
+          const path  = known.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+          const high  = known.length ? known.reduce((a, b) => (b.avg > a.avg ? b : a)) : null
+          const low   = known.length ? known.reduce((a, b) => (b.avg < a.avg ? b : a)) : null
+
+          return (
+            <div style={{ height: MAX_BAR_H + 32 }}>
+              <svg width="100%" height={H + 4} viewBox={`0 0 ${W} ${H + 4}`} preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                {known.length > 1 && (
+                  <path d={path} fill="none" stroke="#c8b87a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                )}
+                {points.map((p, i) => p.avg == null ? null : (
+                  <circle
+                    key={i} cx={p.x} cy={p.y} r={p === high || p === low ? 4 : 2.5}
+                    fill={p === high ? '#8fa876' : p === low ? '#c47a6a' : '#c8b87a'}
+                  />
+                ))}
+                {high && <text x={high.x} y={high.y - 8} fontSize="9" fill="#8fa876" textAnchor="middle">{high.avg}</text>}
+                {low && low !== high && <text x={low.x} y={low.y + 16} fontSize="9" fill="#c47a6a" textAnchor="middle">{low.avg}</text>}
+              </svg>
+              <div className="flex justify-between mt-1">
+                {weekDates.map(date => {
+                  const isToday = toISODate(date) === todayStr
+                  return (
+                    <span key={toISODate(date)} style={{ fontSize: 9, color: isToday ? '#c8b87a' : '#3d3d3d', fontWeight: isToday ? 700 : 400, flex: 1, textAlign: 'center' }}>
+                      {DAYS_SHORT[date.getDay()]}
+                    </span>
+                  )
+                })}
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })()}
+
+        {chartType === 'heatmap' && (
+          <div>
+            <div style={{ display: 'flex', gap: 3, overflowX: 'auto', paddingBottom: 2 }}>
+              {heatmapWeeks.map((week, wi) => (
+                <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {week.map(day => (
+                    <div
+                      key={day.ds}
+                      title={day.avg != null ? `${day.ds}: ${Math.round(day.avg * 10) / 10}★` : day.ds}
+                      style={{
+                        width: 11, height: 11, borderRadius: 2,
+                        background: day.future ? 'transparent' : heatmapColor(day.avg),
+                        border: day.ds === todayStr ? '1px solid #c8b87a' : 'none',
+                      }}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-end gap-1 mt-2">
+              <span style={{ fontSize: 9, color: '#3d3d3d' }}>Less</span>
+              {[null, 0.5, 1.5, 3, 4.5].map((v, i) => (
+                <div key={i} style={{ width: 9, height: 9, borderRadius: 2, background: heatmapColor(v) }} />
+              ))}
+              <span style={{ fontSize: 9, color: '#3d3d3d' }}>More</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── B: AI observations ──────────────────────────────────────────── */}
@@ -358,13 +487,33 @@ export default function MirrorView() {
 
       {/* ── D: Memory log ────────────────────────────────────────────────── */}
       <div className="mx-4 mt-4 mb-4" data-memory-section="true">
-        <p className="text-[#3d3d3d] text-[10px] uppercase tracking-widest mb-1">Your memory</p>
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[#3d3d3d] text-[10px] uppercase tracking-widest">Your memory</p>
+          <div style={{ display: 'flex', gap: 2, background: '#161616', border: '1px solid #2a2a2a', borderRadius: 10, padding: 2 }}>
+            {['list', 'calendar'].map(v => (
+              <button
+                key={v}
+                onClick={() => setMemoryView(v)}
+                style={{
+                  fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 8, border: 'none',
+                  textTransform: 'capitalize', cursor: 'pointer',
+                  background: memoryView === v ? '#2a2a2a' : 'none',
+                  color: memoryView === v ? '#c8b87a' : '#5a5650',
+                }}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
         <p className="text-[#2a2a2a] text-[10px] mb-3">Recent logs and journal entries</p>
 
         {memories.length === 0 ? (
           <p className="text-[#3a3a3a] text-xs text-center py-6">
             No memories yet — use the ✏️ button to log your first one
           </p>
+        ) : memoryView === 'calendar' ? (
+          <MemoryCalendar memories={memories} onDelete={deleteMemory} />
         ) : (() => {
           const groups   = groupMemories(memories)
           const { visible, hidden } = splitGroups(groups, 10)
@@ -419,6 +568,26 @@ export default function MirrorView() {
                               {entry.time_of_day && (
                                 <span style={{ fontSize: 10, color: '#3d3d3d' }}>{entry.time_of_day}</span>
                               )}
+                              <button
+                                onClick={() => {
+                                  if (window.confirm('Delete this memory? This can\'t be undone.')) deleteMemory(entry.id)
+                                }}
+                                aria-label="Delete memory"
+                                style={{
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  width: 20, height: 20, marginLeft: 2, padding: 0,
+                                  background: 'none', border: 'none', cursor: 'pointer',
+                                  color: '#3d3d3d',
+                                }}
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                  <path d="M10 11v6" /><path d="M14 11v6" />
+                                  <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                                </svg>
+                              </button>
                             </div>
                           </div>
                           <p

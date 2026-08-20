@@ -212,6 +212,22 @@ function Bubble({ msg }) {
         </div>
       )}
 
+      {/* Context warning — shown when memory retrieval failed for this reply */}
+      {msg.contextNote && (
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 5,
+          marginTop: 5,
+          padding: '3px 10px',
+          background: 'rgba(150,150,150,0.08)',
+          border: '1px solid rgba(150,150,150,0.20)',
+          borderRadius: 20,
+          fontSize: 11,
+          color: '#8a8a8a',
+        }}>
+          ⚠ {msg.contextNote}
+        </div>
+      )}
+
       <p style={{ fontSize: 10, color: '#3a3a3a', marginTop: msg.chip ? 3 : 3, paddingLeft: isUser ? 0 : 2, paddingRight: isUser ? 2 : 0 }}>
         {msg.ts}
       </p>
@@ -291,6 +307,7 @@ export default function AIView() {
     try {
       // Fetch semantically relevant memories to inject as context
       const contextMsgs = []
+      let contextUnavailable = false
       try {
         const memRes = await fetch(
           `http://localhost:8000/memory/search?q=${encodeURIComponent(text)}`,
@@ -307,8 +324,10 @@ export default function AIView() {
               content: `Relevant memories I found:\n${lines}`,
             })
           }
+        } else {
+          contextUnavailable = true
         }
-      } catch { /* Ollama/backend down — continue without memories */ }
+      } catch { contextUnavailable = true /* backend down — continue without memories */ }
 
       // Mood/emotion questions need real date-scoped aggregation, not
       // semantic similarity — pull the mood summary separately.
@@ -332,8 +351,10 @@ export default function AIView() {
                   `across ${summary.entry_count} logged entries.\n${entryLines}`,
               })
             }
+          } else {
+            contextUnavailable = true
           }
-        } catch { /* backend down — continue without mood summary */ }
+        } catch { contextUnavailable = true /* backend down — continue without mood summary */ }
       }
 
       // Build messages: strip UI-only fields (ts, chip, chipOk) before sending
@@ -380,6 +401,7 @@ export default function AIView() {
         ts: nowHHMM(),
         chip,
         chipOk,
+        contextNote: contextUnavailable ? "Couldn't reach your memories — answering without that context" : null,
       }])
       setOllamaOk(true)
 
