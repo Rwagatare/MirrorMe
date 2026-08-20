@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API_BASE } from '../config'
 import MemoryCalendar from '../components/MemoryCalendar'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -112,9 +113,9 @@ export default function MirrorView() {
 
   useEffect(() => {
     Promise.all([
-      fetch('http://localhost:8000/tasks/').then(r => r.ok ? r.json() : []),
-      fetch('http://localhost:8000/habits/').then(r => r.ok ? r.json() : []),
-      fetch('http://localhost:8000/memory/').then(r => r.ok ? r.json() : []),
+      fetch(`${API_BASE}/tasks/`).then(r => r.ok ? r.json() : []),
+      fetch(`${API_BASE}/habits/`).then(r => r.ok ? r.json() : []),
+      fetch(`${API_BASE}/memory/`).then(r => r.ok ? r.json() : []),
     ]).then(([t, h, m]) => {
       setTasks(t)
       setHabits(h)
@@ -131,7 +132,7 @@ export default function MirrorView() {
     const prev = memories
     setMemories(m => m.filter(entry => entry.id !== id)) // optimistic
     try {
-      const res = await fetch(`http://localhost:8000/memory/${id}`, { method: 'DELETE' })
+      const res = await fetch(`${API_BASE}/memory/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
     } catch {
       setMemories(prev) // roll back on failure
@@ -209,7 +210,7 @@ export default function MirrorView() {
         : h
     ))
 
-    await fetch(`http://localhost:8000/habits/${habit.id}`, {
+    await fetch(`${API_BASE}/habits/${habit.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ completions: JSON.stringify(updated), streak_count: streak }),
@@ -219,7 +220,7 @@ export default function MirrorView() {
   async function addHabit(e) {
     e.preventDefault()
     if (!newHabit.title.trim()) return
-    const res = await fetch('http://localhost:8000/habits/', {
+    const res = await fetch(`${API_BASE}/habits/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: newHabit.title.trim(), emoji: newHabit.emoji.trim() || null }),

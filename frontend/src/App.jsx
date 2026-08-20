@@ -147,7 +147,7 @@ function App() {
             backdropFilter: 'blur(var(--glass-blur)) saturate(1.8)',
             WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(1.8)',
             boxShadow: '0 -1px 0 var(--color-border)',
-            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            paddingBottom: 'var(--safe-bottom)',
           }}
         >
           {TABS.map(({ id, label, Icon }) => {

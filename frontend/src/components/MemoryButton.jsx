@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
+import { API_BASE } from '../config'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const MEMORY_API = 'http://localhost:8000/memory/'
+const MEMORY_API = `${API_BASE}/memory/`
 const MOODS      = ['😔', '😐', '🙂', '😊', '🤩']
 const ENERGIES   = ['Low', 'Medium', 'High']
 

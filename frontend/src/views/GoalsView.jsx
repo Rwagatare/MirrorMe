@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API_BASE } from '../config'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -51,12 +52,12 @@ function GoalCard({ goal, color, onRefetch, onDelete }) {
   const tasks    = goal.tasks ?? []
 
   async function toggleTask(task) {
-    await fetch(`http://localhost:8000/goals/${goal.id}/tasks/${task.id}`, { method: 'PATCH' })
+    await fetch(`${API_BASE}/goals/${goal.id}/tasks/${task.id}`, { method: 'PATCH' })
     onRefetch()
   }
 
   async function deleteTask(task) {
-    await fetch(`http://localhost:8000/goals/${goal.id}/tasks/${task.id}`, { method: 'DELETE' })
+    await fetch(`${API_BASE}/goals/${goal.id}/tasks/${task.id}`, { method: 'DELETE' })
     onRefetch()
   }
 
@@ -65,7 +66,7 @@ function GoalCard({ goal, color, onRefetch, onDelete }) {
     const title = newTitle.trim()
     if (!title) return
     setAdding(true)
-    await fetch(`http://localhost:8000/goals/${goal.id}/tasks/`, {
+    await fetch(`${API_BASE}/goals/${goal.id}/tasks/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title }),
@@ -172,7 +173,7 @@ export default function GoalsView() {
 
   async function fetchGoals(withAnimation = false) {
     try {
-      const res = await fetch('http://localhost:8000/goals/')
+      const res = await fetch(`${API_BASE}/goals/`)
       if (res.ok) {
         const data = await res.json()
         setGoals(data)
@@ -187,14 +188,14 @@ export default function GoalsView() {
 
   async function handleDeleteGoal(goal) {
     if (!window.confirm(`Delete "${goal.title}" and all its sub-tasks?`)) return
-    await fetch(`http://localhost:8000/goals/${goal.id}`, { method: 'DELETE' })
+    await fetch(`${API_BASE}/goals/${goal.id}`, { method: 'DELETE' })
     fetchGoals(true)
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.title.trim()) return
-    await fetch('http://localhost:8000/goals/', {
+    await fetch(`${API_BASE}/goals/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

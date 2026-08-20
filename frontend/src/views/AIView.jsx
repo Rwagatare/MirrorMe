@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
+import { API_BASE, OLLAMA_BASE } from '../config'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const OLLAMA_CHAT = 'http://localhost:11434/api/chat'
-const OLLAMA_TAGS = 'http://localhost:11434/api/tags'
-const TASKS_API   = 'http://localhost:8000/tasks/'
+const OLLAMA_CHAT = `${OLLAMA_BASE}/api/chat`
+const OLLAMA_TAGS = `${OLLAMA_BASE}/api/tags`
+const TASKS_API   = `${API_BASE}/tasks/`
 const MODEL       = 'llama3.2:3b'
 
 // ─── Action tag parsing ───────────────────────────────────────────────────────
@@ -261,9 +262,9 @@ export default function AIView() {
       .catch(() => setOllamaOk(false))
 
     Promise.all([
-      fetch('http://localhost:8000/tasks/today').then(r => r.ok ? r.json() : []).catch(() => []),
-      fetch('http://localhost:8000/goals/').then(r => r.ok ? r.json() : []).catch(() => []),
-      fetch('http://localhost:8000/habits/').then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${API_BASE}/tasks/today`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${API_BASE}/goals/`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${API_BASE}/habits/`).then(r => r.ok ? r.json() : []).catch(() => []),
     ]).then(([t, g, h]) => {
       setTasks(t); setGoals(g); setHabits(h)
       systemPromptRef.current = buildSystemPrompt(t, g)
@@ -313,7 +314,7 @@ export default function AIView() {
       let contextUnavailable = false
       try {
         const memRes = await fetch(
-          `http://localhost:8000/memory/search?q=${encodeURIComponent(text)}`,
+          `${API_BASE}/memory/search?q=${encodeURIComponent(text)}`,
           { signal: AbortSignal.timeout(4000) }
         )
         if (memRes.ok) {
@@ -338,7 +339,7 @@ export default function AIView() {
         try {
           const days = /\bmonth\b/i.test(text) ? 30 : /\btoday\b/i.test(text) ? 1 : 7
           const moodRes = await fetch(
-            `http://localhost:8000/memory/mood-summary?days=${days}`,
+            `${API_BASE}/memory/mood-summary?days=${days}`,
             { signal: AbortSignal.timeout(4000) }
           )
           if (moodRes.ok) {

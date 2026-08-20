@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { API_BASE } from '../config'
 
 // Props: task, earnedStars, onDone(stars), onExtend, onClose
 export default function IncompleteNote({ task, earnedStars, onDone, onExtend }) {
@@ -8,7 +9,7 @@ export default function IncompleteNote({ task, earnedStars, onDone, onExtend }) 
   async function handleSubmit() {
     setSaving(true)
     try {
-      await fetch('http://localhost:8000/memory/', {
+      await fetch(`${API_BASE}/memory/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

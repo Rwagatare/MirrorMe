@@ -7,6 +7,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Installed-as-app on iOS has no browser chrome, so the status bar
+   area needs explicit top padding or content sits under the clock/battery. */
+@media (display-mode: standalone) {
+  body {
+    padding-top: var(--safe-top);
+  }
+}
+
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur)) saturate(1.8);

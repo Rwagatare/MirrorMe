@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API_BASE } from '../config'
 
 // ─── Defaults stored in localStorage ─────────────────────────────────────────
 
@@ -106,7 +107,7 @@ export default function YouView() {
   useEffect(() => { localStorage.setItem('mirrorme_settings',   JSON.stringify(settings))   }, [settings])
 
   useEffect(() => {
-    fetch('http://localhost:8000/tasks/')
+    fetch(`${API_BASE}/tasks/`)
       .then(r => r.ok ? r.json() : [])
       .then(data => { setTasks(data); setLoading(false) })
       .catch(() => setLoading(false))

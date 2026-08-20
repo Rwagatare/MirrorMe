@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { API_BASE } from '../config'
 import PreTimer      from '../components/PreTimer'
 import Timer         from '../components/Timer'
 import IncompleteNote from '../components/IncompleteNote'
@@ -179,7 +180,7 @@ export default function PathView({ onTimerActive }) {
   // Returns the fresh task list so callers can inspect it immediately
   async function fetchTasks() {
     try {
-      const res = await fetch('http://localhost:8000/tasks/today')
+      const res = await fetch(`${API_BASE}/tasks/today`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       setTasks(data)
@@ -220,7 +221,7 @@ export default function PathView({ onTimerActive }) {
     const taskId  = activeTask.id
 
     try {
-      const res = await fetch(`http://localhost:8000/tasks/${taskId}`, {
+      const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'done', stars_average: stars }),
@@ -281,7 +282,7 @@ export default function PathView({ onTimerActive }) {
 
   async function handleDeleteTask(taskId) {
     setMenuTaskId(null)
-    await fetch(`http://localhost:8000/tasks/${taskId}`, { method: 'DELETE' })
+    await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'DELETE' })
     fetchTasks()
   }
 

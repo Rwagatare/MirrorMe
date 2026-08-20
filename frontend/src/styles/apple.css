@@ -3,6 +3,9 @@
                "Helvetica Neue", sans-serif;
   --font-mono: "SF Mono", "Fira Code", ui-monospace, monospace;
 
+  --safe-top:    env(safe-area-inset-top,    0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
   --space-1: 4px;  --space-2: 8px;   --space-3: 12px; --space-4: 16px;
   --space-5: 20px; --space-6: 24px;  --space-8: 32px; --space-10: 40px;
   --space-11: 44px;

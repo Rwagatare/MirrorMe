@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { API_BASE } from '../config'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ export default function PlannerView() {
 
   useEffect(() => {
     fetchTasks()
-    fetch('http://localhost:8000/memory/')
+    fetch(`${API_BASE}/memory/`)
       .then(r => r.ok ? r.json() : [])
       .then(entries => setMemDates(new Set(entries.map(e => e.date))))
       .catch(() => {})
@@ -79,7 +80,7 @@ export default function PlannerView() {
 
   async function fetchTasks() {
     try {
-      const res = await fetch('http://localhost:8000/tasks/')
+      const res = await fetch(`${API_BASE}/tasks/`)
       if (res.ok) {
         const data = await res.json()
         setTasks(data)
@@ -111,7 +112,7 @@ export default function PlannerView() {
     const meta    = SECTION_META[task.section] ?? { emoji: '📌' }
     const dayName = DAYS[date.getDay()]
 
-    await fetch(`http://localhost:8000/tasks/${id}`, {
+    await fetch(`${API_BASE}/tasks/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ due_date: date.toISOString() }),
@@ -128,7 +129,7 @@ export default function PlannerView() {
     if (!form.title.trim()) return
 
     const due = new Date(weekDates[form.dayIndex])
-    await fetch('http://localhost:8000/tasks/', {
+    await fetch(`${API_BASE}/tasks/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -152,7 +153,7 @@ export default function PlannerView() {
 
   async function handleDeleteTask(id, title) {
     if (!window.confirm(`Delete "${title}"?`)) return
-    await fetch(`http://localhost:8000/tasks/${id}`, { method: 'DELETE' })
+    await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE' })
     fetchTasks()
   }
 
