@@ -29,8 +29,9 @@ export default function PreTimer({ task, onClose, onStart }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-[420px] bg-[#141414] rounded-t-2xl px-6 pt-6 pb-10 space-y-5">
+    <div className="sheet-backdrop fixed inset-0 z-50 flex items-end justify-center">
+      <div className="glass-card sheet-panel w-full max-w-[420px] bg-[#141414] px-6 pt-6 pb-10 space-y-5">
+        <div className="sheet-handle" />
 
         {/* Section badge */}
         <div className="flex items-center gap-2">

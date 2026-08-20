@@ -184,13 +184,16 @@ function Bubble({ msg }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start' }}>
-      <div style={{
-        maxWidth: '82%',
-        padding: '10px 14px',
-        borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-        background: isUser ? 'rgba(200,184,122,0.08)' : '#161616',
-        border: `1px solid ${isUser ? 'rgba(200,184,122,0.20)' : '#2a2a2a'}`,
-      }}>
+      <div
+        className={isUser ? 'bubble-in' : 'glass-card bubble-in'}
+        style={{
+          maxWidth: '82%',
+          padding: '10px 14px',
+          borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+          background: isUser ? 'rgba(200,184,122,0.08)' : '#161616',
+          border: `1px solid ${isUser ? 'rgba(200,184,122,0.20)' : '#2a2a2a'}`,
+        }}
+      >
         <p style={{ fontSize: 13, lineHeight: 1.55, margin: 0, whiteSpace: 'pre-wrap', color: isUser ? '#e8d99a' : '#d4d0c8' }}>
           {msg.content}
         </p>
@@ -198,14 +201,14 @@ function Bubble({ msg }) {
 
       {/* Confirmation chip — shown when AI successfully created a task */}
       {msg.chip && (
-        <div style={{
+        <div className="glass-card bubble-in" style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
           marginTop: 5,
-          padding: '3px 10px',
+          padding: 'var(--space-2) var(--space-4)',
           background:  msg.chipOk ? 'rgba(143,168,118,0.10)' : 'rgba(196,122,106,0.10)',
           border:     `1px solid ${msg.chipOk ? 'rgba(143,168,118,0.25)' : 'rgba(196,122,106,0.25)'}`,
-          borderRadius: 20,
-          fontSize: 11,
+          borderRadius: 'var(--radius-full)',
+          fontSize: 13,
           color: msg.chipOk ? '#8fa876' : '#c47a6a',
         }}>
           {msg.chip}
@@ -214,14 +217,14 @@ function Bubble({ msg }) {
 
       {/* Context warning — shown when memory retrieval failed for this reply */}
       {msg.contextNote && (
-        <div style={{
+        <div className="glass-card bubble-in" style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
           marginTop: 5,
-          padding: '3px 10px',
+          padding: 'var(--space-2) var(--space-4)',
           background: 'rgba(150,150,150,0.08)',
           border: '1px solid rgba(150,150,150,0.20)',
-          borderRadius: 20,
-          fontSize: 11,
+          borderRadius: 'var(--radius-full)',
+          fontSize: 13,
           color: '#8a8a8a',
         }}>
           ⚠ {msg.contextNote}

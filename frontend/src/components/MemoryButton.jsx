@@ -214,14 +214,17 @@ function EntrySheet({ type, onClose, onSuccess }) {
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 42, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(4px)' }}
+      className="sheet-backdrop"
+      style={{ position: 'fixed', inset: 0, zIndex: 42, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
       onClick={onClose}
     >
       <div
-        style={{ width: '100%', maxWidth: 420, background: '#141414', borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', boxSizing: 'border-box' }}
+        className="glass-card sheet-panel"
+        style={{ width: '100%', maxWidth: 420, background: '#141414', padding: '24px 20px 36px', boxSizing: 'border-box' }}
         onClick={e => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div className="sheet-handle" />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '16px 0 14px' }}>
           <h3 style={{ color: '#e8e4dc', fontSize: 15, fontWeight: 700, margin: 0 }}>
             {isJournal ? '📖 Journal' : '⚡ Quick log'}
           </h3>
@@ -349,14 +352,17 @@ export default function MemoryButton({ open, onClose }) {
       {/* Choice sheet */}
       {sheet === 'choice' && (
         <div
-          style={{ position: 'fixed', inset: 0, zIndex: 41, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(4px)' }}
+          className="sheet-backdrop"
+          style={{ position: 'fixed', inset: 0, zIndex: 41, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
           onClick={close}
         >
           <div
-            style={{ width: '100%', maxWidth: 420, background: '#141414', borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', boxSizing: 'border-box' }}
+            className="glass-card sheet-panel"
+            style={{ width: '100%', maxWidth: 420, background: '#141414', padding: '24px 20px 36px', boxSizing: 'border-box' }}
             onClick={e => e.stopPropagation()}
           >
-            <p style={{ fontSize: 10, color: '#5a5650', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 20px' }}>
+            <div className="sheet-handle" />
+            <p style={{ fontSize: 10, color: '#5a5650', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '16px 0 20px' }}>
               What would you like to do?
             </p>
 
@@ -367,10 +373,11 @@ export default function MemoryButton({ open, onClose }) {
               <button
                 key={opt.id}
                 onClick={() => setSheet(opt.id)}
+                className="pressable"
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 16,
                   background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 16,
-                  padding: '16px 20px', marginBottom: 10, cursor: 'pointer', textAlign: 'left',
+                  padding: '16px 20px', marginBottom: 10, textAlign: 'left',
                   boxSizing: 'border-box',
                 }}
               >

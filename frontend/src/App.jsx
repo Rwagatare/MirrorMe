@@ -116,8 +116,9 @@ function App() {
             disabled={timerActive}
             data-memory-btn="true"
             title="Log a memory"
+            className={timerActive ? '' : 'pressable'}
             style={{
-              width: 36, height: 36, borderRadius: '50%',
+              width: 44, height: 44, borderRadius: '50%',
               background: '#1e1e1e', border: 'none',
               cursor: timerActive ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -140,19 +141,34 @@ function App() {
         </main>
 
         {/* ── Bottom nav — iOS-style SVG line icons ─────────── */}
-        <nav className="flex-shrink-0 flex bg-[#161616] border-t border-[#ffffff10]">
+        <nav
+          className="flex-shrink-0 flex bg-[#161616] border-t border-[#ffffff10]"
+          style={{
+            backdropFilter: 'blur(var(--glass-blur)) saturate(1.8)',
+            WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(1.8)',
+            boxShadow: '0 -1px 0 var(--color-border)',
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          }}
+        >
           {TABS.map(({ id, label, Icon }) => {
             const active = activeTab === id
             return (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                className="flex-1 flex flex-col items-center justify-center pt-2 pb-2.5 gap-0.5"
+                className="pressable flex-1 flex flex-col items-center justify-center pt-2 pb-2.5 gap-0.5"
+                style={{ minHeight: 44 }}
               >
                 {/* Icon badge — rounded-square highlight when active */}
-                <span className={`flex items-center justify-center w-10 h-7 rounded-xl transition-all ${
-                  active ? 'bg-[#c8b87a15] text-[#c8b87a]' : 'text-[#5a5650]'
-                }`}>
+                <span
+                  className={`flex items-center justify-center w-10 h-7 rounded-xl ${
+                    active ? 'bg-[#c8b87a15] text-[#c8b87a]' : 'text-[#5a5650]'
+                  }`}
+                  style={{
+                    transition: `transform var(--dur-press) var(--ease-spring), background var(--dur-popover) var(--ease-out), color var(--dur-popover) var(--ease-out)`,
+                    transform: active ? 'scale(1.1)' : 'scale(1)',
+                  }}
+                >
                   <Icon />
                 </span>
                 <span className={`text-[9px] tracking-wide transition-colors ${

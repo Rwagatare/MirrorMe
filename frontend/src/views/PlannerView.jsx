@@ -315,8 +315,9 @@ export default function PlannerView() {
 
       {/* Add task bottom sheet */}
       {showSheet && (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-[420px] bg-[#141414] rounded-t-2xl px-6 pt-6 pb-10">
+        <div className="sheet-backdrop fixed inset-0 z-40 flex items-end justify-center">
+          <div className="glass-card sheet-panel w-full max-w-[420px] bg-[#141414] px-6 pt-6 pb-10">
+            <div className="sheet-handle" />
             <form onSubmit={handleAddTask} className="space-y-4">
               <h3 className="text-white text-base font-semibold">Add Task</h3>
 

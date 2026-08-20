@@ -245,7 +245,7 @@ export default function MirrorView() {
       </div>
 
       {/* ── A: Stars chart ───────────────────────────────────────────────── */}
-      <div className="mx-4 mb-4 bg-[#161616] border border-[#2a2a2a] rounded-2xl p-4">
+      <div className="glass-card mx-4 mb-4 bg-[#161616] p-4">
         <div className="flex items-center justify-between mb-0.5">
           <p className="text-white text-xs font-semibold">
             {chartType === 'heatmap' ? 'Last 12 weeks' : "This week's stars"}
@@ -382,7 +382,7 @@ export default function MirrorView() {
           {AI_INSIGHTS.map((ins, i) => (
             <div key={i}
               style={{ borderLeft: `3px solid ${ins.color}` }}
-              className="bg-[#161616] rounded-xl px-3 py-3 flex items-start gap-2.5"
+              className="glass-card card-enter bg-[#161616] px-3 py-3 flex items-start gap-2.5"
             >
               <span className="text-base flex-shrink-0 leading-tight">{ins.emoji}</span>
               <p className="text-[#c8c4bc] text-xs leading-relaxed">{ins.text}</p>
@@ -408,7 +408,7 @@ export default function MirrorView() {
             No habits yet — add one below
           </p>
         ) : (
-          <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl overflow-hidden">
+          <div className="glass-card bg-[#161616] overflow-hidden">
             {/* Column headers */}
             <div className="flex items-center px-3 pt-3 pb-1">
               <div className="flex-1" />
@@ -444,7 +444,7 @@ export default function MirrorView() {
                       {habit.title}
                     </p>
                     {streak > 0 && (
-                      <p style={{ fontSize: 9, color: '#c8b87a', marginTop: 1 }}>{streak}d streak</p>
+                      <span className="streak-badge" style={{ display: 'inline-block', marginTop: 2 }}>{streak}d streak</span>
                     )}
                   </div>
 
@@ -456,6 +456,7 @@ export default function MirrorView() {
                       <button
                         key={ds}
                         onClick={() => toggleHabitDay(habit, ds)}
+                        className={done ? 'habit-pop' : ''}
                         style={{
                           width: 28, height: 28,
                           borderRadius: '50%',
@@ -466,7 +467,7 @@ export default function MirrorView() {
                           alignItems: 'center',
                           justifyContent: 'center',
                           marginLeft: 2,
-                          transition: 'background 0.15s, border-color 0.15s',
+                          transition: 'background-color 160ms var(--ease-spring), border-color 160ms var(--ease-spring), transform 160ms var(--ease-spring)',
                         }}
                       >
                         {done && (
@@ -552,7 +553,8 @@ export default function MirrorView() {
                       return (
                         <div
                           key={entry.id}
-                          style={{ background: '#161616', border: '1px solid #2a2a2a', borderRadius: 14, padding: '12px 14px' }}
+                          className="glass-card card-enter"
+                          style={{ background: '#161616', padding: '12px 14px' }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                             <span style={{
@@ -631,8 +633,9 @@ export default function MirrorView() {
 
       {/* Add habit modal */}
       {showModal && (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-[420px] bg-[#141414] rounded-t-2xl px-6 pt-6 pb-10">
+        <div className="sheet-backdrop fixed inset-0 z-40 flex items-end justify-center">
+          <div className="glass-card sheet-panel w-full max-w-[420px] bg-[#141414] px-6 pt-6 pb-10">
+            <div className="sheet-handle" />
             <form onSubmit={addHabit} className="space-y-4">
               <h3 className="text-white text-base font-semibold">New Habit</h3>
               <div className="flex gap-3">

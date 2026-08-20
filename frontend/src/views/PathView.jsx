@@ -133,7 +133,7 @@ function SectionBanner({ sectionKey }) {
   return (
     <div className="flex items-center gap-2 px-4 py-2 my-2">
       <span className="text-base">{meta.emoji}</span>
-      <span className="text-[10px] font-semibold tracking-widest uppercase text-[#3d3d3d]">
+      <span className="section-header" style={{ padding: 0 }}>
         {meta.label}
       </span>
       <div className="flex-1 h-px bg-[#1e1e1e]" />

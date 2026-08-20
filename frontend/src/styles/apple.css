@@ -1,0 +1,80 @@
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+               "Helvetica Neue", sans-serif;
+  --font-mono: "SF Mono", "Fira Code", ui-monospace, monospace;
+
+  --space-1: 4px;  --space-2: 8px;   --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px;  --space-8: 32px; --space-10: 40px;
+  --space-11: 44px;
+
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+  --radius-xl: 20px; --radius-2xl: 28px; --radius-full: 9999px;
+
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out:     cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out:  cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer:  cubic-bezier(0.32, 0.72, 0, 1);
+
+  --dur-press:   120ms;
+  --dur-popover: 180ms;
+  --dur-sheet:   380ms;
+  --dur-page:    320ms;
+
+  --color-bg:            #F2F2F7;
+  --color-surface:       rgba(255, 255, 255, 0.85);
+  --color-surface-2:     rgba(242, 242, 247, 0.9);
+  --color-border:        rgba(0, 0, 0, 0.08);
+  --color-border-strong: rgba(0, 0, 0, 0.15);
+  --color-text:          #1C1C1E;
+  --color-text-2:        #3C3C43;
+  --color-text-3:        rgba(60, 60, 67, 0.6);
+  --color-accent:        #007AFF;
+  --color-accent-light:  rgba(0, 122, 255, 0.12);
+  --color-success:       #34C759;
+  --color-warning:       #FF9500;
+  --color-danger:        #FF3B30;
+
+  --glass-blur:   20px;
+  --glass-bg:     rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 4px 24px rgba(0,0,0,0.08),
+                  0 1px 3px rgba(0,0,0,0.06),
+                  inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg:            #000000;
+    --color-surface:       rgba(28, 28, 30, 0.92);
+    --color-surface-2:     rgba(44, 44, 46, 0.9);
+    --color-border:        rgba(255, 255, 255, 0.08);
+    --color-border-strong: rgba(255, 255, 255, 0.15);
+    --color-text:          #FFFFFF;
+    --color-text-2:        #EBEBF5;
+    --color-text-3:        rgba(235, 235, 245, 0.6);
+    --color-accent:        #0A84FF;
+    --color-accent-light:  rgba(10, 132, 255, 0.15);
+    --glass-bg:     rgba(28, 28, 30, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 4px 24px rgba(0,0,0,0.4),
+                    0 1px 3px rgba(0,0,0,0.3),
+                    inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.title-1  { font-size: 28px; font-weight: 700; letter-spacing: -0.02em;  line-height: 1.20; }
+.title-2  { font-size: 22px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25; }
+.title-3  { font-size: 20px; font-weight: 600; letter-spacing: -0.01em;  line-height: 1.30; }
+.headline { font-size: 17px; font-weight: 600; letter-spacing: -0.005em; line-height: 1.35; }
+.body-text{ font-size: 17px; font-weight: 400; letter-spacing: -0.005em; line-height: 1.47; }
+.callout  { font-size: 16px; font-weight: 400; line-height: 1.44; }
+.subhead  { font-size: 15px; font-weight: 400; line-height: 1.40; }
+.footnote { font-size: 13px; font-weight: 400; letter-spacing: -0.003em; line-height: 1.38; color: var(--color-text-3); }
+.caption  { font-size: 12px; font-weight: 400; letter-spacing:  0.010em; line-height: 1.33; color: var(--color-text-3); }

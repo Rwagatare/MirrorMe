@@ -1,1 +1,108 @@
 @import "tailwindcss";
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius-xl);
+}
+
+.pressable {
+  cursor: pointer;
+  transition: transform var(--dur-press) var(--ease-out),
+              opacity  var(--dur-press) var(--ease-out);
+}
+.pressable:active { transform: scale(0.96); opacity: 0.85; }
+@media (hover: hover) and (pointer: fine) {
+  .pressable:hover { opacity: 0.92; }
+}
+
+.card-enter {
+  animation: cardEnter var(--dur-page) var(--ease-out) both;
+}
+@keyframes cardEnter {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+}
+
+/* Bottom sheets: default mounted state (visible) */
+.sheet-panel {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform var(--dur-sheet) var(--ease-drawer),
+              opacity   var(--dur-sheet) var(--ease-out);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+}
+.sheet-panel.sheet-exit {
+  transform: translateY(100%);
+  opacity: 0;
+}
+@keyframes sheetIn {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.sheet-panel {
+  animation: sheetIn var(--dur-sheet) var(--ease-drawer) both;
+}
+
+.sheet-backdrop {
+  transition: opacity var(--dur-sheet) var(--ease-out);
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--color-border-strong);
+  border-radius: 2px;
+  margin: 8px auto 0;
+}
+
+@keyframes habitPop {
+  0%   { transform: scale(1);    }
+  50%  { transform: scale(1.12); }
+  100% { transform: scale(1);    }
+}
+.habit-pop {
+  animation: habitPop 200ms var(--ease-spring);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .day-dot:hover { transform: scale(1.3); transition: transform 160ms var(--ease-spring); }
+}
+
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)  scale(1);     }
+}
+.bubble-in {
+  animation: bubbleIn 200ms var(--ease-out) both;
+}
+
+.section-header {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-3);
+  padding: var(--space-4) var(--space-4) var(--space-2);
+}
+
+.streak-badge {
+  border-radius: var(--radius-full);
+  background: var(--color-warning);
+  color: #fff;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+}

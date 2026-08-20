@@ -76,11 +76,11 @@ function GoalCard({ goal, color, onRefetch, onDelete }) {
   }
 
   return (
-    <div style={{ borderLeft: `3px solid ${color}` }} className="bg-[#161616] rounded-xl overflow-hidden">
+    <div style={{ borderLeft: `3px solid ${color}` }} className="glass-card card-enter bg-[#161616] overflow-hidden">
 
       {/* Card header: expand toggle + delete */}
       <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-        <button onClick={() => setExpanded(v => !v)} className="flex-1 text-left px-3 py-3">
+        <button onClick={() => setExpanded(v => !v)} className="pressable flex-1 text-left px-3 py-3">
           <div className="flex items-center gap-2 mb-2">
             <span style={{ background: color }} className="w-2 h-2 rounded-full flex-shrink-0" />
             <span className="text-[#e8e4dc] text-xs font-medium leading-tight flex-1">{goal.title}</span>
@@ -327,8 +327,9 @@ export default function GoalsView() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-[420px] bg-[#141414] rounded-t-2xl px-6 pt-6 pb-10">
+        <div className="sheet-backdrop fixed inset-0 z-40 flex items-end justify-center">
+          <div className="glass-card sheet-panel w-full max-w-[420px] bg-[#141414] px-6 pt-6 pb-10">
+            <div className="sheet-handle" />
             <form onSubmit={handleSubmit} className="space-y-4">
               <h3 className="text-white text-base font-semibold">New Goal</h3>
               <input type="text" required autoFocus placeholder="Goal title"

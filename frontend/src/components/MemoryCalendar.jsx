@@ -69,14 +69,17 @@ function DaySheet({ date, entries, onClose, onDelete }) {
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 45, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(4px)' }}
+      className="sheet-backdrop"
+      style={{ position: 'fixed', inset: 0, zIndex: 45, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
       onClick={onClose}
     >
       <div
-        style={{ width: '100%', maxWidth: 420, maxHeight: '78vh', overflowY: 'auto', background: '#141414', borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', boxSizing: 'border-box' }}
+        className="glass-card sheet-panel"
+        style={{ width: '100%', maxWidth: 420, maxHeight: '78vh', overflowY: 'auto', background: '#141414', padding: '24px 20px 36px', boxSizing: 'border-box' }}
         onClick={e => e.stopPropagation()}
       >
-        <h3 style={{ color: '#e8e4dc', fontSize: 15, fontWeight: 700, margin: '0 0 16px' }}>
+        <div className="sheet-handle" />
+        <h3 style={{ color: '#e8e4dc', fontSize: 15, fontWeight: 700, margin: '16px 0 16px' }}>
           {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </h3>
 
@@ -173,8 +176,8 @@ export default function MemoryCalendar({ memories, onDelete }) {
                 {date.getDate()}
               </span>
               <div style={{ display: 'flex', gap: 2, height: 4 }}>
-                {hasJournal && <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#c8b87a' }} />}
-                {hasLog     && <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#4a9d8a' }} />}
+                {hasJournal && <span className="day-dot" style={{ width: 4, height: 4, borderRadius: '50%', background: '#c8b87a' }} />}
+                {hasLog     && <span className="day-dot" style={{ width: 4, height: 4, borderRadius: '50%', background: '#4a9d8a' }} />}
               </div>
             </button>
           )

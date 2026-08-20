@@ -17,8 +17,8 @@ export default function GiftModal({ section, onClose }) {
   const meta = SECTION_META[section] ?? { emoji: '🎁', label: section ?? 'session' }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-6">
-      <div className="w-full max-w-[360px] bg-[#141414] rounded-2xl px-6 py-7 space-y-5">
+    <div className="sheet-backdrop fixed inset-0 z-50 flex items-center justify-center px-6">
+      <div className="glass-card card-enter w-full max-w-[360px] bg-[#141414] px-6 py-7 space-y-5">
 
         {/* Header */}
         <div className="text-center space-y-1">
@@ -34,7 +34,7 @@ export default function GiftModal({ section, onClose }) {
           {ACTIVITIES.map((a) => (
             <button
               key={a.label}
-              className="flex flex-col items-center justify-center bg-[#1a1a1a] rounded-xl py-4 px-3 gap-1.5 active:bg-[#222] transition-colors"
+              className="pressable flex flex-col items-center justify-center bg-[#1a1a1a] rounded-xl py-4 px-3 gap-1.5 active:bg-[#222] transition-colors"
             >
               <span className="text-2xl">{a.emoji}</span>
               <span className="text-white text-xs font-semibold">{a.label}</span>

@@ -161,7 +161,7 @@ export default function YouView() {
     <div className="flex-1 flex flex-col overflow-y-auto bg-[#0f0f0f] pb-10">
 
       {/* ── 1. Profile card ──────────────────────────────────────────────── */}
-      <div className="mx-4 mt-4 mb-4 bg-[#161616] border border-[#2a2a2a] rounded-2xl p-4">
+      <div className="glass-card mx-4 mt-4 mb-4 bg-[#161616] p-4">
         <div className="flex items-center gap-4">
           {/* Avatar */}
           <div style={{
@@ -211,7 +211,7 @@ export default function YouView() {
           { label: 'Done',       value: totalDone,       sub: 'tasks'   },
           { label: 'Best',       value: bestSectionLabel, sub: 'section' },
         ].map(({ label, value, sub }) => (
-          <div key={label} className="bg-[#161616] border border-[#2a2a2a] rounded-xl p-3 flex flex-col items-center">
+          <div key={label} className="glass-card bg-[#161616] p-3 flex flex-col items-center">
             <span style={{ fontSize: 18, fontWeight: 700, color: '#c8b87a', lineHeight: 1.2 }}>{value}</span>
             <span style={{ fontSize: 9, color: '#3d3d3d', marginTop: 2 }}>{sub}</span>
             <span style={{ fontSize: 9, color: '#5a5650', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 1 }}>{label}</span>
@@ -226,7 +226,7 @@ export default function YouView() {
         </p>
         <div className="grid grid-cols-2 gap-2">
           {activities.map((act, i) => (
-            <div key={i} className="bg-[#161616] border border-[#2a2a2a] rounded-xl p-3">
+            <div key={i} className="glass-card bg-[#161616] p-3">
               {editingIdx === i ? (
                 /* Edit mode */
                 <div className="flex flex-col gap-1.5">
@@ -287,7 +287,7 @@ export default function YouView() {
         <p style={{ fontSize: 9, fontWeight: 700, color: '#3d3d3d', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8 }}>
           My Sections
         </p>
-        <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl overflow-hidden">
+        <div className="glass-card bg-[#161616] overflow-hidden">
           {sections.map((sec, i) => (
             <div key={i} className="flex items-center px-4 py-3"
               style={{ borderBottom: i < sections.length - 1 ? '1px solid #1e1e1e' : 'none' }}>
@@ -342,7 +342,7 @@ export default function YouView() {
         <p style={{ fontSize: 9, fontWeight: 700, color: '#3d3d3d', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8 }}>
           Settings
         </p>
-        <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl overflow-hidden">
+        <div className="glass-card bg-[#161616] overflow-hidden">
 
           {/* AI model */}
           <div className="flex items-center px-4 py-3.5" style={{ borderBottom: '1px solid #1e1e1e' }}>
@@ -408,7 +408,7 @@ export default function YouView() {
           href="https://github.com/Rwagatare/MirrorMe"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-between bg-[#161616] border border-[#2a2a2a] rounded-2xl px-4 py-3.5 no-underline active:opacity-70 transition-opacity"
+          className="glass-card pressable flex items-center justify-between bg-[#161616] px-4 py-3.5 no-underline"
         >
           <div>
             <p style={{ fontSize: 13, color: '#e8e4dc', fontWeight: 500 }}>View on GitHub</p>
