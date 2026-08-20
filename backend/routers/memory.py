@@ -7,10 +7,10 @@ from pydantic import BaseModel
 from database import get_db
 from models import MemoryLog
 
-# Mood is stored as whatever the UI sends. Historically that's been the emoji
-# scale (see MemoryButton.jsx), but the schema comment documents word labels
-# too — normalize both so aggregation/sentiment logic works regardless of
-# which the entry was written with.
+# Canonical mood storage format is the emoji scale (what MemoryButton.jsx
+# sends). MOOD_SCORES still accepts the legacy string labels on read so old
+# rows (pre-normalize_mood, or from backend/migrations/normalize_moods.py
+# not yet having been run) keep scoring correctly.
 MOOD_SCORES = {
     "😔": 1, "terrible": 1,
     "😐": 2, "hard": 2,
@@ -19,10 +19,19 @@ MOOD_SCORES = {
     "🤩": 5, "great": 5,
 }
 MOOD_LABELS = {1: "terrible", 2: "hard", 3: "okay", 4: "good", 5: "great"}
+MOOD_LABEL_TO_EMOJI = {"terrible": "😔", "hard": "😐", "okay": "🙂", "good": "😊", "great": "🤩"}
 
 
 def mood_score(mood: str | None) -> int | None:
     return MOOD_SCORES.get(mood) if mood else None
+
+
+def normalize_mood(mood: str | None) -> str | None:
+    """Convert a legacy string mood label to its emoji form. Already-emoji
+    or unrecognized values pass through unchanged."""
+    if mood is None:
+        return None
+    return MOOD_LABEL_TO_EMOJI.get(mood, mood)
 
 
 class MemoryCreate(BaseModel):
@@ -120,7 +129,9 @@ def get_memory(memory_id: int, db: Session = Depends(get_db)):
 @router.post("/")
 def create_memory(data: MemoryCreate, db: Session = Depends(get_db)):
     """Create a new memory log entry and embed it into ChromaDB."""
-    entry = MemoryLog(**data.model_dump())
+    fields = data.model_dump()
+    fields["mood"] = normalize_mood(fields.get("mood"))
+    entry = MemoryLog(**fields)
     db.add(entry)
     db.commit()
     db.refresh(entry)
@@ -147,6 +158,8 @@ def update_memory(memory_id: int, updates: MemoryUpdate, db: Session = Depends(g
         raise HTTPException(status_code=404, detail=f"Memory {memory_id} not found")
 
     for field, value in updates.model_dump(exclude_unset=True).items():
+        if field == "mood":
+            value = normalize_mood(value)
         setattr(entry, field, value)
 
     db.commit()
