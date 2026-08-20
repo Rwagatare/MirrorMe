@@ -4,6 +4,8 @@
 
 ## Why this exists
 
+MirrorMe lives local helping you self-organize agentically. It uses agentic workflow to create and post your daily tasks and organizes them in duolingo style path where each task must be completed before opeinig the other. Per task you are given a rating that lives in Mirror's tab where you see your daily ratings,and AI driven suggestions of what to improve. In Mirror you can track your habits and daily logs.
+
 For the past few years I've grown increasingly concerned with cloud-based tools — especially as advancements in Data Science, Machine Learning, and Deep Learning have given rise to LLMs and powerful AI systems. These tools are incredible, but they come with a cost most people don't think about: your data, your habits, your goals, your patterns — all living on someone else's server, trained on, monetized, or lost if a company shuts down.
 
 Additionally, most of these tools are expensive — $10, $20, sometimes more per month — putting them out of reach for many people around the world. I wanted to build something genuinely powerful that anyone can use for free, runs entirely on their own machine, and never sends their data anywhere.
@@ -17,7 +19,7 @@ The result is MirrorMe — a local-first, AI-powered personal planner that doesn
 - **Path** — a gamified daily task journey (Duolingo-style nodes, timers, and stars) that turns your day into a meaningful progression
 - **Planner** — a 7-day kanban board that syncs automatically to your Path so planning and doing stay connected
 - **Goals** — a growing tree where each branch is a goal and fruits represent milestones you've reached
-- **Mirror** — habit insights, star charts, and AI observations that reflect your real patterns over time — not vanity metrics
+- **Mirror** — habit insights, AI observations, and your memory log (list or calendar view) that reflect your real patterns over time — not vanity metrics. View your stars as a bar chart, line chart, or a GitHub-style contribution heatmap
 - **AI assistant** — a local LLM that knows your full context (tasks, goals, habits, history) and takes actions on your behalf
 
 ## The principles

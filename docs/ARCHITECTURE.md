@@ -65,8 +65,9 @@ sequenceDiagram
     O-->>B: chat completion
 ```
 
-> `backend/ai/system_prompt.py` is a more complete, server-orchestrated prompt builder that
-> was written for this flow but is not called from any route — it's currently dead code.
+> An earlier `backend/ai/system_prompt.py` module was written for a server-orchestrated
+> version of this flow but was never wired into a route. Confirmed unused (full-repo
+> import search) and removed — client-orchestrated RAG above is the current implementation.
 
 ## Which path does each action take?
 
@@ -92,10 +93,12 @@ mirrorme/
 │   ├── routers/
 │   │   ├── tasks.py · goals.py · goal_tasks.py
 │   │   └── habits.py · memory.py
+│   ├── tests/                 # pytest suite — tasks, goals, mood normalization (see CI)
+│   ├── migrations/
+│   │   └── normalize_moods.py # one-time backfill: legacy string moods -> emoji
 │   └── ai/
 │       ├── chroma_client.py   # Chroma init, upsert/query helpers
-│       ├── embeddings.py      # Calls Ollama nomic-embed-text
-│       └── system_prompt.py   # ⚠️ Dead code — see onboarding guide §4.1
+│       └── embeddings.py      # Calls Ollama nomic-embed-text
 ├── frontend/src/views/
 │   ├── AIView.jsx            # Chat — RAG context via FastAPI, completion direct to Ollama
 │   ├── PathView.jsx          # Today's tasks + focus timer
